@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import {
   ArrowUpRight,
@@ -11,6 +12,7 @@ import {
   PanelsTopLeft,
   CalendarDays,
   ShieldCheck,
+  Users as UsersIcon,
   Plus,
   Minus,
 } from "lucide-react";
@@ -96,7 +98,7 @@ export default function Landing() {
     document.getElementById("kontakt")?.scrollIntoView({ behavior: "smooth" });
   }
   return (
-    <>
+    <div className="consulting-site">
       <div className="preview-strip">
         DESIGNVORSCHAU{" "}
         <span>Next Consulting · Ihr nächster Schritt beginnt hier.</span>
@@ -134,6 +136,16 @@ export default function Landing() {
       </header>
       <main>
         <section className="hero wrap">
+          <div className="hero-media" aria-hidden="true">
+            <Image
+              src="/images/consulting-workspace.webp"
+              alt=""
+              fill
+              priority
+              sizes="100vw"
+            />
+          </div>
+          <div className="hero-atmosphere" aria-hidden="true" />
           <div className="hero-copy">
             <p className="eyebrow">
               <span className="dot" />
@@ -142,9 +154,13 @@ export default function Landing() {
             <h1>
               Ihre nächste
               <br />
-              Website
+              Website.
               <br />
-              <em>kann mehr.</em>
+              <em>
+                Mehr als
+                <br />
+                ein guter Auftritt.
+              </em>
             </h1>
             <p className="lead">
               Wir verbinden Ihren digitalen Auftritt mit den Abläufen dahinter.
@@ -159,65 +175,62 @@ export default function Landing() {
                 Unsere Arbeit entdecken <ArrowRight size={17} />
               </a>
             </div>
-            <p className="hero-note">
-              Individuell entwickelt. Verständlich erklärt. Persönlich betreut.
-            </p>
+            <div className="hero-checks">
+              <span>
+                <ShieldCheck size={15} />
+                Individuell entwickelt
+              </span>
+              <span>
+                <Check size={15} />
+                Klarer Leistungsumfang
+              </span>
+              <span>
+                <UsersIcon />
+                Persönlich begleitet
+              </span>
+            </div>
           </div>
-          <div className="hero-system">
-            <div className="system-top">
-              <span>VON DER ANFRAGE ZUM ABSCHLUSS</span>
-              <span className="live-label">
-                <span className="dot" />
-                Alles verbunden
+          <div
+            className="hero-stage"
+            aria-label="Website, Automatisierung und CRM im Zusammenspiel"
+          >
+            <article className="floating-card main-float">
+              <span className="float-label">
+                <Workflow size={13} />
+                Alles sinnvoll verbunden
               </span>
-            </div>
-            <div className="system-main">
-              <span className="system-icon">
-                <Globe2 size={34} />
+              <h3>Eine Website, die mitarbeitet.</h3>
+              <p>
+                Von der ersten Anfrage bis zum nächsten Projekt: Wir verbinden
+                Ihren Auftritt mit Automatisierungen, KI und einem CRM, das zu
+                Ihnen passt.
+              </p>
+              <div className="gold-progress" aria-hidden="true">
+                <span />
+              </div>
+            </article>
+            <article className="floating-card small-float">
+              <span className="float-icon">
+                <BrainCircuit size={22} />
               </span>
               <div>
-                <small>DER ANFANG</small>
-                <h3>Ihre Website.</h3>
-                <p>Der erste Kontakt. Ein guter Eindruck.</p>
+                <small>WENIGER ROUTINE</small>
+                <strong>Mehr Zeit für Ihr Unternehmen.</strong>
               </div>
-              <ArrowUpRight className="gold" />
-            </div>
-            <div className="system-flow">
-              <span />
-              <p>Eine Anfrage. Viele Möglichkeiten.</p>
-              <span />
-            </div>
-            <div className="system-grid">
-              <div>
-                <Workflow />
-                <strong>Automatisierung</strong>
-                <span>Weniger Handgriffe.</span>
-              </div>
-              <div>
-                <BrainCircuit />
-                <strong>Künstliche Intelligenz</strong>
-                <span>Mehr Unterstützung.</span>
-              </div>
-            </div>
-            <div className="system-flow">
-              <span />
-              <p>Informationen am richtigen Ort.</p>
-              <span />
-            </div>
-            <div className="system-bottom">
-              <PanelsTopLeft size={25} />
-              <div>
-                <small>IHR EIGENES CRM</small>
-                <strong>Kunden. Projekte. Überblick.</strong>
-              </div>
-              <span className="round-check">
-                <Check size={19} />
+            </article>
+            <article className="floating-card bottom-float">
+              <span className="float-icon">
+                <PanelsTopLeft size={22} />
               </span>
-            </div>
-            <p className="system-caption">
-              Ein durchdachter Ablauf statt einzelner Insellösungen.
-            </p>
+              <div>
+                <small>ALLES IM BLICK</small>
+                <strong>Ihre Kunden. Ihre Projekte. Ihr System.</strong>
+              </div>
+            </article>
           </div>
+          <a className="hero-scroll" href="#leistungen">
+            ENTDECKEN SIE IHRE MÖGLICHKEITEN <span>↓</span>
+          </a>
         </section>
         <div className="word-band">
           <div className="wrap">
@@ -595,6 +608,6 @@ export default function Landing() {
           kein öffentlicher Unternehmensauftritt.
         </small>
       </footer>
-    </>
+    </div>
   );
 }
