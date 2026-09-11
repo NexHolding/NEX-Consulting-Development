@@ -138,7 +138,7 @@ export default function Landing() {
         <section className="hero wrap">
           <div className="hero-media" aria-hidden="true">
             <Image
-              src="/images/consulting-workspace.webp"
+              src="/images/nex-digital-studio.webp"
               alt=""
               fill
               priority
