@@ -1,0 +1,8 @@
+{
+  "name": "nex-consulting-development",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "echo \"No app yet. See README.\""
+  }
+}
