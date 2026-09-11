@@ -1,5 +1,9 @@
-node_modules
-.env
-dist
-.DS_Store
-.vscode
+
+.env*.local
+supabase/.temp/
+node_modules/
+.next/
+.vercel/
+*.tsbuildinfo
+test-results/
+playwright-report/

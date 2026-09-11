@@ -1,0 +1,6 @@
+.env*
+supabase/.temp
+NEXT-CONSULTING-CODEX-BRIEF.md
+tests
+scripts
+.git

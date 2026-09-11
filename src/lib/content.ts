@@ -1,0 +1,111 @@
+export const packages = [
+  {
+    name: "Launch",
+    tag: "DER DIGITALE EINSTIEG",
+    price: "4.900",
+    text: "Ein professioneller Auftritt. Und die ersten Abläufe, die von selbst laufen.",
+    features: [
+      "Bis zu 5 Inhaltsseiten",
+      "2 einfache Automatisierungen",
+      "Anfragen & Terminbuchung",
+      "Individuelles, mobiles Design",
+      "2 gemeinsame Korrekturrunden",
+    ],
+  },
+  {
+    name: "Business",
+    tag: "WEBSITE + EIGENES CRM",
+    price: "14.900",
+    text: "Ihre Website wird zum Arbeitswerkzeug. Für Kunden, Projekte und Ihr Team.",
+    features: [
+      "Bis zu 10 Inhaltsseiten",
+      "Eigenes CRM mit 4 Kernmodulen",
+      "Mitarbeiterlogin & 2 Rollen",
+      "5 Automatisierungen, 3 Anbindungen",
+      "Eine klar definierte KI-Funktion",
+    ],
+  },
+  {
+    name: "Enterprise",
+    tag: "INDIVIDUELL ENTWICKELT",
+    price: null,
+    text: "Eine Plattform, die sich nach Ihrem Unternehmen richtet. Bis ins Detail.",
+    features: [
+      "Individuelle Kunden- & Partnerportale",
+      "Komplexe KI- und Geschäftsprozesse",
+      "Buchungs- & Abrechnungssysteme",
+      "Migrationen & ERP-Anbindungen",
+      "Persönliche Architekturplanung",
+    ],
+  },
+];
+export const care = [
+  {
+    name: "Care",
+    price: "249",
+    hours: "1 Stunde",
+    changes: 2,
+    response: "2 Arbeitstage",
+    text: "Für einen verlässlichen digitalen Auftritt.",
+  },
+  {
+    name: "Care Plus",
+    price: "749",
+    hours: "4 Stunden",
+    changes: 6,
+    response: "1 Arbeitstag",
+    text: "Für Systeme, die im Alltag mitarbeiten.",
+  },
+  {
+    name: "Care Dedicated",
+    price: "1.990",
+    hours: "12 Stunden",
+    changes: 12,
+    response: "4 Servicestunden",
+    text: "Für die kontinuierliche Weiterentwicklung.",
+  },
+];
+export const projects = [
+  {
+    name: "Insolvenzhelden",
+    type: "SERVICEPLATTFORM",
+    text: "Von der digitalen Anfrage zur strukturierten Kundenverwaltung. Website, Rollen und interne Abläufe in einem System.",
+    tags: ["CRM", "Workflows"],
+    status: "Einblick ins Development",
+  },
+  {
+    name: "Aurelia Flow",
+    type: "WEBSITE & BUCHUNG",
+    text: "Ein digitaler Auftritt mit integriertem Buchungssystem. Präsentation und Buchung als zusammenhängendes Erlebnis.",
+    tags: ["Website", "Buchung"],
+    status: "Projektbeispiel",
+  },
+  {
+    name: "Finde dein Ding",
+    type: "MARKUS BECKER",
+    text: "Ein neues digitales Zuhause für Finde dein Ding. Wir begleiten das Projekt vom Konzept bis zur Umsetzung.",
+    tags: ["Konzeption", "Entwicklung"],
+    status: "In Entwicklung",
+  },
+  {
+    name: "Posthelden",
+    type: "HELDEN-PROJEKT",
+    text: "Ein weiteres Projekt aus unserer Arbeit. Ausgewählte Einblicke und den Leistungsumfang ergänzen wir hier.",
+    tags: ["Portfolio"],
+    status: "Referenzentwurf",
+  },
+  {
+    name: "Finanzhelden",
+    type: "HELDEN-PROJEKT",
+    text: "Ein digitaler Auftritt aus unserem Projektportfolio. Die detaillierte Projektvorstellung folgt.",
+    tags: ["Portfolio"],
+    status: "Referenzentwurf",
+  },
+  {
+    name: "Goldhelden",
+    type: "HELDEN-PROJEKT",
+    text: "Individuelle Projektarbeit aus unserer Helden-Reihe. Weitere Einblicke folgen nach redaktioneller Freigabe.",
+    tags: ["Portfolio"],
+    status: "Referenzentwurf",
+  },
+];

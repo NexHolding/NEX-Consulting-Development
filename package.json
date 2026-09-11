@@ -1,8 +1,32 @@
 {
-  "name": "nex-consulting-development",
-  "version": "0.1.0",
+  "name": "next-consulting",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "echo \"No app yet. See README.\""
+    "dev": "next dev",
+    "build": "next build --webpack",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.110.8",
+    "lucide-react": "1.26.0",
+    "next": "16.3.4",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "server-only": "0.0.1",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.0",
+    "@types/node": "24.13.3",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "prettier": "3.9.6",
+    "typescript": "6.0.3"
+  },
+  "engines": {
+    "node": "24.x"
   }
 }

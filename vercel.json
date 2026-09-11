@@ -1,0 +1,9 @@
+{
+  "crons": [
+    {
+      "path": "/api/billing",
+      "schedule": "15 5 * * *"
+    }
+  ],
+  "regions": ["fra1"]
+}
