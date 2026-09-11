@@ -4,9 +4,9 @@ Website und interner CRM-Workspace mit Next.js, Vercel und Supabase.
 
 Live-Vorschau: https://nex-consulting.vercel.app · Login: https://nex-consulting.vercel.app/login
 
-Deployment `dpl_7cuauW8wXStjPjRZokWtrvmNKUXL` ist READY; Ausführungsregion Frankfurt. Der Live-Login mit Global_Admin wurde im Browser geprüft.
+Ausführungsregion Frankfurt. Website und geschützte Portal-Endpunkte werden nach dem Deployment geprüft.
 
-Der Quellcode bleibt auf ausdrücklichen Nutzerwunsch lokal. Kein GitHub-Push. Das Git-Repository liegt dauerhaft direkt im Projektordner auf Branch `codex/next-consulting-workspace`. Die Vercel-Vorschau ist davon unabhängig bereits veröffentlicht.
+Die aktuelle Nutzervorgabe lautet: **PUSH = vollständiger Stand nach GitHub auf `main`, Vercel Production aktualisieren und Supabase-Migrationen synchronisieren.** Ziel: `NexHolding/NEX-Consulting-Development`. Die frühere Nur-lokal-Vorgabe ist aufgehoben. Dauerhafte Arbeitsanweisungen stehen in `AGENTS.md`. Zugangsdaten und Datenbankinhalte bleiben außerhalb von Git.
 
 ## Einrichtung
 
