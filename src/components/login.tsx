@@ -14,19 +14,19 @@ export default function Login() {
         Zur Website
       </Link>
       <section className="login-story">
-        <p className="eyebrow">NEXT CONSULTING / WORKSPACE</p>
+        <p className="eyebrow">NEX CONSULTING / WORKSPACE</p>
         <h1>
           Alles im Blick.
           <br />
           <em>Mehr bewegen.</em>
         </h1>
         <p>
-          Kunden, Projekte und Ihre Zeit.
+          Ihr Auftrag, Ihr Kontakt, Ihr nächster Schritt.
           <br />
           Ein Ort für die Arbeit dahinter.
         </p>
         <span className="login-signature">
-          next<span>CONSULTING</span>
+          NEX<span>CONSULTING</span>
         </span>
       </section>
       <section className="login-panel">
@@ -50,7 +50,11 @@ export default function Login() {
               });
               const d = await r.json();
               if (!r.ok) throw new Error(d.error);
-              router.replace("/crm");
+              router.replace(
+                ["/portal", "/crm/portal"].includes(d.redirect)
+                  ? d.redirect
+                  : "/crm",
+              );
               router.refresh();
             } catch (e) {
               setError(
@@ -90,7 +94,7 @@ export default function Login() {
             <ArrowUpRight size={18} />
           </button>
         </form>
-        <small>Interner Zugang für freigeschaltete Mitarbeiter.</small>
+        <small>Zugang für freigeschaltete Kunden und Mitarbeiter.</small>
       </section>
     </main>
   );

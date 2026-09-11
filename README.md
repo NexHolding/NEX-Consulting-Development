@@ -1,4 +1,4 @@
-# Next Consulting
+# NEX Consulting
 
 Website und interner CRM-Workspace mit Next.js, Vercel und Supabase.
 
@@ -28,7 +28,7 @@ Alle CRM-Daten liegen im separaten Supabase-Projekt `yeaihagzvzirmnrvvbng` in Fr
 
 - E-Mail-Rechnungsversand, steuerliche Finalisierung, Belegnummern, Zahlungen und Mahnungen. Benötigt Betreiber-/Steuerangaben und bestätigten Absender/Versandanbieter.
 - Automatische Fakturierung freigegebener Zeitpositionen und automatische Verrechnung der Betreuungskontingente. Bis dahin Freigaben als Nachweis, Rechnungspositionen manuell prüfen.
-- Zusätzliche Teamrollen und Kundenportal: Schema-Rollen sind vorgesehen, aktuell kann ausschließlich Global_Admin das interne CRM verwenden.
+- Erweiterte Teamrechte im Haupt-CRM. Mitarbeiter können die Portalverwaltung bearbeiten; das Haupt-CRM bleibt Global Admin vorbehalten.
 - Domain `www.next-consulting.com`, öffentliche Rechtstexte, abschließende Portfolio-Freigaben. Die Website ist derzeit ausdrücklich eine nicht indexierbare Vorschau.
 
 Das Briefing beschreibt den weitergehenden Zielumfang. Diese Anwendung ist die erste funktionsfähige Version, nicht bereits die vollständige Umsetzung aller Erweiterungen.
@@ -40,3 +40,20 @@ Das Briefing beschreibt den weitergehenden Zielumfang. Diese Anwendung ist die e
 - `npm run build`: Produktion und TypeScript.
 
 Kein Secret ins Repository, in Logs oder ins Client-Bundle übernehmen. Datenbankpasswort und Service-Role-Key sind ausschließlich lokal geschützt bzw. als verschlüsselte Vercel-Konfiguration gespeichert. Alle CRM-Tabellen haben RLS ohne öffentliche Zugriffsregeln; die Anwendung greift nach serverseitiger Berechtigungsprüfung zu.
+
+## Kundenportal und interne Portalverwaltung
+
+- `/portal`: ausschließlich Dashboard, freigegebene Aufträge mit Detailansicht, Supporttickets, Tarif, Rechnungen, Verträge/Dokumente und Kontaktdaten. Authentifizierte Daten werden ohne Cache und mit expliziten Feldlisten abgefragt.
+- `/crm/portal`: Aufträge, Websites/Anwendungen, Mehrfachzuordnung von Websites zu Aufträgen, nachträgliche Ticketzuordnung, interne Kommentare, freigegebene Antworten und Dokumente. Neue Inhalte sind standardmäßig intern.
+- Kundenzugänge und Mitarbeiterzugänge legt der Global Admin unter Kundenzugänge an. Kundenkonten sind fest einem Kunden zugeordnet. Mitarbeiter dürfen Portalverwaltung nutzen, aber keine Konten erstellen und nicht auf das Haupt-CRM zugreifen.
+- Websiteauswahl und Zuordnungen sind auf den jeweiligen Kunden begrenzt. Der Kunde muss beim Ticket keine Website auswählen. Mitarbeiter bestätigen Vorschläge durch Auswahl und Speichern; keine automatische Zuweisung.
+- Private PDF-Dateien (maximal 4 MB) werden in `nc-documents` gespeichert. Jeder Download prüft Sitzung, Kundenzuordnung und Freigabe erneut. Ein Upload allein veröffentlicht keine Datei.
+- Rechnungsentwürfe bleiben gesperrt. Bestehende steuerliche Finalisierung und Rechnungsversand sind weiterhin nicht aktiviert.
+
+### Website-Vorschläge
+
+Ohne zusätzliche Konfiguration arbeitet ein lokaler, im Adminportal als solcher gekennzeichneter Abgleich von Domains, Website-Namen und Funktionen. Für semantische KI-Vorschläge serverseitig `OPENAI_API_KEY` und `TICKET_AI_MODEL` setzen. Die Integration verwendet die [OpenAI Responses API](https://developers.openai.com/api/reference/cli/resources/responses/methods/create) mit strukturierten Ausgaben, `store: false`, acht Sekunden Timeout und Prüfung aller vorgeschlagenen IDs gegen die Websites des Kunden. Übertragen werden Tickettext und die Namen, Domains und Funktionsbeschreibungen dieses Kunden; interne Kommentare oder Zugänge werden nicht übertragen. Ohne Konfiguration, bei Ausfall oder ungültiger Ausgabe greift der lokale Abgleich. Der Live-Aufruf eines KI-Modells ist ohne Schlüssel noch nicht verifiziert.
+
+### Portaltests
+
+`node --env-file=.env.local tests/portal-integration.mjs` prüft Rollen, Kundentrennung, Freigaben, PDF-Zugriff, Ticketannahme und Zuordnungen mit synthetischen Datensätzen. `BROWSER_QA=1` ergänzt Headless-Browsertests für Login, Auftragsdetails, Ticketformular und mobile Darstellung. Alle Testkonten, Daten und Dateien werden im selben Lauf im finally-Block bereinigt.

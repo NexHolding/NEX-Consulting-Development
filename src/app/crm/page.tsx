@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Workspace" };
 export default async function Page() {
   const user = await currentUser();
+  if (user?.role === "employee") redirect("/crm/portal");
   if (!user || user.role !== "global_admin") redirect("/login");
   return <Workspace initial={{ user, ...(await snapshot()) }} />;
 }

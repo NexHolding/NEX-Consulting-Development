@@ -22,7 +22,7 @@ export async function currentUser() {
   if (!data) return null;
   const { data: user } = await db()
     .from("nc_users")
-    .select("id,username,role,active")
+    .select("id,username,role,active,customer_id")
     .eq("id", data.user_id)
     .eq("active", true)
     .maybeSingle();

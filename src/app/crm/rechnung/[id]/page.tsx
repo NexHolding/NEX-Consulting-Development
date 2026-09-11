@@ -29,7 +29,7 @@ export default async function InvoicePage({
   return (
     <main className="invoice-paper">
       <Link href="/crm">← Zurück zum Workspace</Link>
-      <p className="eyebrow">NEXT CONSULTING</p>
+      <p className="eyebrow">NEX CONSULTING</p>
       <h1>Rechnungsentwurf</h1>
       <div className="info-box">
         Nicht zur Zahlung bestimmt. Noch keine ausgestellte Rechnung. Absender-

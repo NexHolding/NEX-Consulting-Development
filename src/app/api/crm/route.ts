@@ -150,13 +150,11 @@ export async function POST(request: Request) {
           "Care Plus": [74900, 240],
           "Care Dedicated": [199000, 720],
         };
-        result = await client
-          .from("nc_subscriptions")
-          .insert({
-            ...p,
-            monthly_cents: plans[p.plan][0],
-            included_minutes: plans[p.plan][1],
-          });
+        result = await client.from("nc_subscriptions").insert({
+          ...p,
+          monthly_cents: plans[p.plan][0],
+          included_minutes: plans[p.plan][1],
+        });
         break;
       }
       case "subscription_end": {
@@ -181,15 +179,13 @@ export async function POST(request: Request) {
           .eq("id", p.project_id)
           .single();
         if (!project) throw new Error("Projekt fehlt.");
-        result = await client
-          .from("nc_invoices")
-          .insert({
-            ...p,
-            customer_id: project.customer_id,
-            items: [
-              { description: p.subject, quantity: 1, unit_cents: p.net_cents },
-            ],
-          });
+        result = await client.from("nc_invoices").insert({
+          ...p,
+          customer_id: project.customer_id,
+          items: [
+            { description: p.subject, quantity: 1, unit_cents: p.net_cents },
+          ],
+        });
         break;
       }
       case "lead_status": {

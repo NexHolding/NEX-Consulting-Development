@@ -445,8 +445,11 @@ export default function Workspace({ initial }: { initial: unknown }) {
             n<span>↗</span>
           </span>
           <span>
-            next<span className="brand-small">WORKSPACE</span>
+            NEX<span className="brand-small">WORKSPACE</span>
           </span>
+        </Link>
+        <Link className="button small" href="/crm/portal">
+          Kundenportal verwalten
         </Link>
         <p className="sidebar-label">ARBEITSBEREICH</p>
         <nav>
@@ -517,7 +520,7 @@ export default function Workspace({ initial }: { initial: unknown }) {
         <main className="workspace-content">
           <div className="workspace-title">
             <div>
-              <p className="eyebrow">NEXT CONSULTING</p>
+              <p className="eyebrow">NEX CONSULTING</p>
               <h1>{tab === "Dashboard" ? "Guten Tag. Was steht an?" : tab}</h1>
               <p>
                 {tab === "Dashboard"
@@ -1193,9 +1196,7 @@ export default function Workspace({ initial }: { initial: unknown }) {
                 <dt>Angemeldet als</dt>
                 <dd>{data.user.username} · Global Administrator</dd>
                 <dt>Datenbank</dt>
-                <dd>
-                  Supabase · separates Next-Consulting-Projekt · Frankfurt
-                </dd>
+                <dd>Supabase · separates NEX-Consulting-Projekt · Frankfurt</dd>
                 <dt>Anwendungszugriff</dt>
                 <dd>
                   Serverseitige Anmeldung, geschützte Sitzungen, keine
@@ -1225,7 +1226,7 @@ export default function Workspace({ initial }: { initial: unknown }) {
           )}
         </main>
         <footer className="workspace-footer">
-          NEXT CONSULTING WORKSPACE{" "}
+          NEX CONSULTING WORKSPACE{" "}
           <span>Ihre Daten werden in Supabase gespeichert.</span>
         </footer>
       </div>

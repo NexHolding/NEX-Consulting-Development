@@ -51,12 +51,12 @@ const services = [
 ];
 export function Brand() {
   return (
-    <Link href="/" className="brand" aria-label="Next Consulting Startseite">
+    <Link href="/" className="brand" aria-label="NEX Consulting Startseite">
       <span className="brand-symbol">
         n<span>↗</span>
       </span>
       <span>
-        next<span className="brand-small">CONSULTING</span>
+        NEX<span className="brand-small">CONSULTING</span>
       </span>
     </Link>
   );
@@ -101,7 +101,7 @@ export default function Landing() {
     <div className="consulting-site">
       <div className="preview-strip">
         DESIGNVORSCHAU{" "}
-        <span>Next Consulting · Ihr nächster Schritt beginnt hier.</span>
+        <span>NEX Consulting · Ihr nächster Schritt beginnt hier.</span>
       </div>
       <header className="site-header wrap">
         <Brand />
@@ -553,7 +553,7 @@ export default function Landing() {
               <input name="website" tabIndex={-1} autoComplete="off" />
             </label>
             <p className="footnote">
-              Vorschau: Ihre Anfrage wird im Next-Consulting-CRM gespeichert.
+              Vorschau: Ihre Anfrage wird im NEX-Consulting-CRM gespeichert.
               Bitte noch keine sensiblen Projektdaten übermitteln.
             </p>
             <button className="button" disabled={pending}>
@@ -604,7 +604,7 @@ export default function Landing() {
           Mitarbeiterlogin <ArrowUpRight size={14} />
         </Link>
         <small>
-          © {new Date().getFullYear()} Next Consulting · Interne Vorschau, noch
+          © {new Date().getFullYear()} NEX Consulting · Interne Vorschau, noch
           kein öffentlicher Unternehmensauftritt.
         </small>
       </footer>

@@ -1,14 +1,14 @@
-# Next Consulting – Auftrag für Codex
+# NEX Consulting – Auftrag für Codex
 
 Stand: 11. September 2026. Dieses Dokument ist ein vollständiger Umsetzungsauftrag mit Angebotsstruktur und ersten Website-Texten. Preise sind unsere vorgeschlagene Positionierung, noch keine beschlossenen Vertragsbedingungen. Umsetzungsstand nach Einrichtung: Eine erste Anwendung ist unter https://nex-consulting.vercel.app veröffentlicht; Global_Admin ist angelegt und der Login geprüft. Der vollständige Zielumfang dieses Briefings geht über die erste Version hinaus. Details zu aktiven Funktionen und noch offenen Erweiterungen stehen in README.md.
 
 ## 1. Ziel und Marke
 
-Erstelle eine deutschsprachige Website mit geschütztem Agentur-CRM für **Next Consulting** unter **https://www.next-consulting.com**. Verwende diese .com-Adresse konsistent für Links, Metadaten und spätere Domainkonfiguration. Die Domain muss vor Aktivierung auf Eigentum und DNS-Zugang geprüft werden. Technische Bestandsnamen mit „NEX“ dürfen zunächst bestehen bleiben.
+Erstelle eine deutschsprachige Website mit geschütztem Agentur-CRM für **NEX Consulting** unter **https://www.next-consulting.com**. Verwende diese .com-Adresse konsistent für Links, Metadaten und spätere Domainkonfiguration. Die Domain muss vor Aktivierung auf Eigentum und DNS-Zugang geprüft werden. Die Marke heißt NEX Consulting; „Next“ ist ausschließlich Bestandteil der ausdrücklich gewünschten Domain und technischer Frameworknamen.
 
 Wir entwickeln individuelle Websites, automatisierte Geschäftsprozesse, KI-Funktionen, CRM-Systeme und Buchungslösungen für Dienstleister und mittelständische Unternehmen. Die Website soll qualifizierte Projektanfragen erzeugen und anhand eigener Projekte und Kundenprojekte unsere Arbeit zeigen. Das CRM organisiert unsere eigenen Kunden, Projekte, Betreuungspakete, Arbeitszeiten und Rechnungen.
 
-Wichtig: Das Agentur-CRM von Next Consulting ist unser internes Betriebssystem. Ein CRM, das wir im Business-Angebot für einen Kunden entwickeln, ist ein separates Kundenprojekt mit getrennten Daten und Zugängen.
+Wichtig: Das Agentur-CRM von NEX Consulting ist unser internes Betriebssystem. Ein CRM, das wir im Business-Angebot für einen Kunden entwickeln, ist ein separates Kundenprojekt mit getrennten Daten und Zugängen.
 
 ## 2. Vorhandene Projekte und Referenzcode
 
@@ -41,7 +41,7 @@ Gestaltungs- und Navigationsprinzipien übernehmen, aber Insolvenzfachlogik durc
 
 ## 3. Design
 
-Hochwertiges, ruhiges Schwarz-Gold-Design. Die Insolvenzhelden-Vorlage enthält zusätzlich Blau-/Cyan-Akzente; bei Next Consulting dominieren ausdrücklich Schwarz und Gold.
+Hochwertiges, ruhiges Schwarz-Gold-Design. Die Insolvenzhelden-Vorlage enthält zusätzlich Blau-/Cyan-Akzente; bei NEX Consulting dominieren ausdrücklich Schwarz und Gold.
 
 - Hintergrund `#08090B`, tiefe Fläche `#030405`.
 - Karten `#121315`, erhöhte Flächen `#1A1B1E`.
@@ -143,7 +143,7 @@ Kleine Zeile: **Websites · Automatisierung · KI · CRM**
 
 Headline: **Ihre nächste Website kann mehr.**
 
-Text: „Wir entwickeln Websites, die zu Ihrem Unternehmen passen – und verbinden sie mit den Abläufen dahinter. Von der ersten Anfrage über die Terminbuchung bis zum eigenen CRM: Next Consulting macht aus Ihrer digitalen Präsenz ein Werkzeug für Ihren Arbeitsalltag.“
+Text: „Wir entwickeln Websites, die zu Ihrem Unternehmen passen – und verbinden sie mit den Abläufen dahinter. Von der ersten Anfrage über die Terminbuchung bis zum eigenen CRM: NEX Consulting macht aus Ihrer digitalen Präsenz ein Werkzeug für Ihren Arbeitsalltag.“
 
 Buttons: **Projekt besprechen** und **Projekte entdecken**.
 
@@ -224,7 +224,7 @@ Formular: Name, Unternehmen, geschäftliche E-Mail, Telefon optional, gewünscht
 
 Abschlussbutton: **Projektanfrage senden**. Bestätigung: „Vielen Dank. Ihre Anfrage ist bei uns eingegangen. Wir melden uns, um die nächsten Schritte zu besprechen.“
 
-Footer: Next Consulting · Websites, Automatisierung, KI und CRM · Impressum · Datenschutz · Kundenlogin. Rechtliche Unternehmensangaben müssen vom Betreiber geliefert werden; keine erfundenen Pflichttexte veröffentlichen.
+Footer: NEX Consulting · Websites, Automatisierung, KI und CRM · Impressum · Datenschutz · Kundenlogin. Rechtliche Unternehmensangaben müssen vom Betreiber geliefert werden; keine erfundenen Pflichttexte veröffentlichen.
 
 ## 7. CRM-Navigation und Kundenakte
 
@@ -309,7 +309,7 @@ Geschützte Sitzungen, serverseitige Rollenprüfung, Login-Begrenzung und funkti
 
 ## 11. Datenmodell
 
-Separates Supabase-Projekt für Next Consulting, mit versionierten Migrationen und getrennten Entwicklungs-/Produktionskonfigurationen. Vor Erstellung Organisation und Region feststellen; EU-Region als Vorschlag. Kostenpflichtige Optionen nicht ohne festgelegten Kostenrahmen buchen.
+Separates Supabase-Projekt für NEX Consulting, mit versionierten Migrationen und getrennten Entwicklungs-/Produktionskonfigurationen. Vor Erstellung Organisation und Region feststellen; EU-Region als Vorschlag. Kostenpflichtige Optionen nicht ohne festgelegten Kostenrahmen buchen.
 
 Wesentliche Entitäten:
 
@@ -345,7 +345,7 @@ Eine visuelle Vorschau ist kein fertiges CRM. Fehlende Integrationen offen kennz
 
 Abnahmekriterien:
 
-- Auftritt verwendet Next Consulting und ausschließlich die gewünschte .com-Domain für Produktionsmetadaten.
+- Auftritt verwendet NEX Consulting und ausschließlich die gewünschte .com-Domain für Produktionsmetadaten.
 - Pakete und Betreuung entsprechen den definierten Grenzen; Buttons übergeben die richtige Auswahl.
 - Formular speichert Anfragen dauerhaft und zeigt echte Fehler-/Erfolgszustände.
 - Global_Admin kann sich nach Einrichtung anmelden; falsche Zugangsdaten scheitern; gesperrte Nutzer verlieren Zugriff.
@@ -383,3 +383,13 @@ Diese Punkte blockieren die entsprechende Inbetriebnahme, nicht das Erstellen de
 - Verifizierte Portfolio-URLs, Bilder, Projektstatus und Zuordnung Eigenprojekt/Kundenprojekt.
 
 Das im Gespräch genannte Admin-Passwort bleibt außerhalb dieses übertragbaren Dokuments.
+
+## Verbindliche Ergänzung: schlankes Kundenportal
+
+Der Kundenbereich enthält ausschließlich Dashboard, aktuelle Aufträge und Bearbeitungsstand, Supporttickets, gebuchten Tarif, Rechnungen, Verträge/Dokumente und Kontaktdaten. Interne Projekte, Zeiten, Kalkulationen, technische Daten, Mitarbeiterzuweisungen, KI-Wertungen und Kommentare bleiben intern.
+
+Jeder freigegebene Auftrag zeigt Bezeichnung, Nummer, Status, Prozentfortschritt, aktuellen Schritt, abgeschlossene Schritte, nächsten Schritt, Rückfragen/Unterlagen, vereinbarten oder voraussichtlichen Termin, letzte Aktualisierung und Ansprechpartner. Die zwölf vereinbarten Statuswerte sind in `src/lib/portal-model.ts` definiert. NEX pflegt ausschließlich diese freigegebenen Angaben; Kunden können sie nicht verändern. Mehrere Aufträge erscheinen getrennt mit eigener Detailansicht.
+
+Websites und Anwendungen gehören zur internen Kundenverwaltung: Name, Domain, Projekt-ID/-status, Tarif, Vertragsbezug, Kontakt, Mitarbeiter, aktive Aufträge und offene Tickets. Ein Auftrag kann mehrere Websites verbinden. Erst eine ausdrückliche Freigabe zeigt Name und Domain im Kundendashboard.
+
+Tickets werden ohne verpflichtende Websiteauswahl angenommen. NEX kann Website, Auftrag, Projekt, Tarif, Mitarbeiter und Team jederzeit ergänzen oder ändern. Auswahlmöglichkeiten gehören stets zum Kunden des Tickets. Mehrdeutige oder fehlende Vorschläge führen zu „Website-Zuordnung erforderlich“ und verhindern die Ticketannahme nicht. KI-Vorschläge müssen von Mitarbeitern geprüft werden; sie bleiben intern.

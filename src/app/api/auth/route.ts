@@ -38,7 +38,12 @@ export async function POST(request: Request) {
       data?.password_hash ||
         "00000000000000000000000000000000:" + "00".repeat(64),
     );
-    if (!data?.active || !valid || data.role !== "global_admin")
+    if (
+      !data?.active ||
+      !valid ||
+      !["global_admin", "employee", "customer"].includes(data.role) ||
+      (data.role === "customer" && !data.customer_id)
+    )
       return NextResponse.json(
         { error: "Benutzername oder Passwort stimmt nicht." },
         { status: 401 },
@@ -60,7 +65,15 @@ export async function POST(request: Request) {
       path: "/",
       expires,
     });
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({
+      ok: true,
+      redirect:
+        data.role === "customer"
+          ? "/portal"
+          : data.role === "employee"
+            ? "/crm/portal"
+            : "/crm",
+    });
   } catch {
     return NextResponse.json(
       {
