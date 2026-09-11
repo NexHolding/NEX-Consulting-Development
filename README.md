@@ -2,6 +2,12 @@
 
 Website und interner CRM-Workspace mit Next.js, Vercel und Supabase.
 
+Live-Vorschau: https://nex-consulting.vercel.app · Login: https://nex-consulting.vercel.app/login
+
+Deployment `dpl_7cuauW8wXStjPjRZokWtrvmNKUXL` ist READY; Ausführungsregion Frankfurt. Der Live-Login mit Global_Admin wurde im Browser geprüft.
+
+Der Quellcode bleibt auf ausdrücklichen Nutzerwunsch lokal. Kein GitHub-Push. Das Git-Repository liegt dauerhaft direkt im Projektordner auf Branch `codex/next-consulting-workspace`. Die Vercel-Vorschau ist davon unabhängig bereits veröffentlicht.
+
 ## Einrichtung
 
 Node 24, `npm ci`, `.env.example` nach `.env.local` übertragen und serverseitige Werte ergänzen. Anschließend `npm run dev` oder `npm run build` und `npm start`.

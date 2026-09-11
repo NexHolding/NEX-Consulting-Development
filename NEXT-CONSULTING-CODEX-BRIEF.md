@@ -1,6 +1,6 @@
 # Next Consulting – Auftrag für Codex
 
-Stand: 11. September 2026. Dieses Dokument ist ein vollständiger Umsetzungsauftrag mit Angebotsstruktur und ersten Website-Texten. Preise sind unsere vorgeschlagene Positionierung, noch keine beschlossenen Vertragsbedingungen. Es wurde dadurch noch keine Website veröffentlicht und kein CRM-Benutzer angelegt.
+Stand: 11. September 2026. Dieses Dokument ist ein vollständiger Umsetzungsauftrag mit Angebotsstruktur und ersten Website-Texten. Preise sind unsere vorgeschlagene Positionierung, noch keine beschlossenen Vertragsbedingungen. Umsetzungsstand nach Einrichtung: Eine erste Anwendung ist unter https://nex-consulting.vercel.app veröffentlicht; Global_Admin ist angelegt und der Login geprüft. Der vollständige Zielumfang dieses Briefings geht über die erste Version hinaus. Details zu aktiven Funktionen und noch offenen Erweiterungen stehen in README.md.
 
 ## 1. Ziel und Marke
 
