@@ -543,6 +543,45 @@
 .consulting-site .portfolio-copy {
   padding: 25px;
 }
+.consulting-site .portfolio-preview {
+  aspect-ratio: 1440 / 950;
+  overflow: hidden;
+  border-bottom: 1px solid #d5b36720;
+  background: #07121c;
+}
+.consulting-site .portfolio-preview img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+.consulting-site .portfolio-preview-pending {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 18px;
+  padding: 28px;
+  background: radial-gradient(ellipse at top right, #cbb3731a, transparent 70%);
+}
+.consulting-site .portfolio-preview-pending span {
+  color: #9baebd;
+  font-size: 11px;
+}
+.consulting-site .portfolio-preview-pending strong,
+.consulting-site .portfolio-copy h3 {
+  color: #e7d292;
+  font-size: clamp(23px, 2.2vw, 30px);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+.consulting-site .portfolio-copy h3 {
+  margin: 12px 0;
+}
+.consulting-site .portfolio-copy .portfolio-tags {
+  margin-top: 18px;
+}
 .consulting-site .portfolio-copy p {
   font-size: 12px;
   color: #9baebd;

@@ -292,19 +292,32 @@ export default function Landing() {
             <div className="portfolio-grid">
               {projects.map((p, i) => (
                 <article className={"portfolio p" + i} key={p.name}>
-                  <div className="portfolio-art">
-                    <span>{p.type}</span>
+                  <div className="portfolio-preview">
+                    {p.preview ? (
+                      <Image
+                        src={p.preview}
+                        alt={`Einblick in die Website von ${p.name}`}
+                        width={1440}
+                        height={950}
+                        sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 33vw"
+                      />
+                    ) : (
+                      <div className="portfolio-preview-pending">
+                        <span>{p.type}</span>
+                        <strong>{p.name}</strong>
+                        <span>Projekteinblick folgt</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="portfolio-copy">
+                    <span className="subtle-status">{p.status}</span>
                     <h3>{p.name}</h3>
+                    <p>{p.text}</p>
                     <div className="portfolio-tags">
                       {p.tags.map((t) => (
                         <span key={t}>{t}</span>
                       ))}
                     </div>
-                    <span className="portfolio-number">0{i + 1}</span>
-                  </div>
-                  <div className="portfolio-copy">
-                    <span className="subtle-status">{p.status}</span>
-                    <p>{p.text}</p>
                   </div>
                 </article>
               ))}
