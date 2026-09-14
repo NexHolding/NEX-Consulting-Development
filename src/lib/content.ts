@@ -1,3 +1,5 @@
+export const brandSlogan = "BUILD WHAT’S NEX(T).";
+
 export const packages = [
   {
     name: "Launch",
@@ -68,7 +70,7 @@ export const care = [
 export const projects = [
   {
     name: "Insolvenzhelden",
-    preview: "/images/projects/insolvenzhelden.webp",
+    preview: "/images/projects/insolvenzhelden-2026-09.webp",
     type: "SERVICEPLATTFORM",
     text: "Von der digitalen Anfrage zur strukturierten Kundenverwaltung. Website, Rollen und interne Abläufe in einem System.",
     tags: ["CRM", "Workflows"],

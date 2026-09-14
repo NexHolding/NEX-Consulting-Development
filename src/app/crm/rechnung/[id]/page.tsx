@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { currentUser, db } from "@/lib/server";
 import Link from "next/link";
+import { BrandLogo } from "@/components/brand";
 export default async function InvoicePage({
   params,
 }: {
@@ -29,16 +30,18 @@ export default async function InvoicePage({
   return (
     <main className="invoice-paper">
       <Link href="/crm">← Zurück zum Workspace</Link>
-      <p className="eyebrow">NEX CONSULTING</p>
+      <BrandLogo className="invoice-logo" />
       <h1>Rechnungsentwurf</h1>
       <div className="info-box">
         Nicht zur Zahlung bestimmt. Noch keine ausgestellte Rechnung. Absender-
         und Steuerangaben werden vor Ausstellung geprüft.
       </div>
       <section>
-        <h2>{c?.name}</h2>
+        <h2>{c?.billing_name || c?.name}</h2>
         <p className="preline">
-          {c?.address || "Rechnungsanschrift noch ergänzen"}
+          {c?.billing_address ||
+            c?.address ||
+            "Rechnungsanschrift noch ergänzen"}
         </p>
       </section>
       <p>Erstellt am {new Date(i.created_at).toLocaleDateString("de-DE")}</p>

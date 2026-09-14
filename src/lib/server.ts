@@ -71,15 +71,22 @@ export async function snapshot() {
     "invoices",
   ] as const;
   const result = await Promise.all(
-    names.map((n) =>
-      client
-        .from("nc_" + n)
-        .select("*")
-        .order(n === "time_entries" ? "started_at" : "created_at", {
-          ascending: false,
-        })
-        .limit(1000),
-    ),
+    names.map(async (n) => {
+      const rows: unknown[] = [];
+      for (let offset = 0; ; offset += 1000) {
+        const r = await client
+          .from("nc_" + n)
+          .select("*")
+          .order(n === "time_entries" ? "started_at" : "created_at", {
+            ascending: false,
+          })
+          .order("id")
+          .range(offset, offset + 999);
+        if (r.error) return r;
+        rows.push(...r.data);
+        if (r.data.length < 1000) return { data: rows, error: null };
+      }
+    }),
   );
   const out: Record<string, unknown> = { capturedAt: Date.now() };
   result.forEach((r, i) => {

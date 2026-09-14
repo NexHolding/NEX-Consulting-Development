@@ -1,0 +1,71 @@
+/* Shared placement of the supplied, unmodified NEX artwork. */
+:root {
+  --brand-gold: #ae884c;
+  --brand-charcoal: #292929;
+}
+.nex-logo {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 2917 / 628;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.nex-logo .nex-logo-artwork {
+  position: absolute;
+  width: 107.1306%;
+  max-width: none;
+  height: auto;
+  left: -3.5653%;
+  top: -99.3631%;
+}
+.brand.nex-brand {
+  display: block;
+  flex-shrink: 0;
+  width: 260px;
+  max-width: 100%;
+  line-height: 1;
+}
+.consulting-site .brand.nex-brand {
+  width: 260px;
+}
+.workspace .sidebar > .brand.nex-brand {
+  width: 100%;
+  margin: 0 0 30px;
+}
+.portal-header .brand.nex-brand {
+  width: 260px;
+}
+.login-panel .brand.nex-brand {
+  width: 320px;
+  margin: 0 auto 30px;
+}
+.invoice-logo {
+  width: 300px;
+  max-width: 100%;
+  margin: 32px 0;
+}
+@media (max-width: 1100px) {
+  .consulting-site .site-header .brand.nex-brand {
+    width: 210px;
+  }
+}
+@media (max-width: 600px) {
+  .consulting-site .site-header .brand.nex-brand {
+    width: 190px;
+  }
+  .portal-header {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .portal-header .brand.nex-brand {
+    width: 210px;
+  }
+  .portal-header > span {
+    order: 3;
+    flex-basis: 100%;
+  }
+  .login-panel .brand.nex-brand {
+    width: 260px;
+  }
+}

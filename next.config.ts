@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
 const config: NextConfig = {
   poweredByHeader: false,
+  outputFileTracingIncludes: {
+    "/api/time-report": [
+      "./public/fonts/NotoSans-Regular.ttf",
+      "./public/brand/nex-consulting-logo.png",
+    ],
+  },
   async headers() {
     return [
       {

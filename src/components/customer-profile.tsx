@@ -1,0 +1,491 @@
+"use client";
+import Link from "next/link";
+import { useState } from "react";
+import {
+  reportSeconds,
+  reportWindow,
+  timeDuration,
+  type ReportTime,
+} from "@/lib/time-report";
+export type CustomerRecord = {
+  id: string;
+  name: string;
+  contact: string;
+  email: string;
+  address: string;
+  notes: string;
+  phone?: string;
+  billing_name?: string;
+  billing_email?: string;
+  billing_address?: string;
+  vat_id?: string;
+  payment_terms_days?: number;
+  source?: string;
+};
+type Project = {
+  id: string;
+  customer_id: string;
+  name: string;
+  status: string;
+  budget_cents: number;
+  hourly_rate_cents?: number;
+};
+type Invoice = {
+  id: string;
+  customer_id: string;
+  subject: string;
+  net_cents: number;
+  status: string;
+};
+const money = (v: number) =>
+  new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(
+    v / 100,
+  );
+export function TimeReport({
+  times,
+  projects,
+  customerId,
+  now,
+}: {
+  times: ReportTime[];
+  projects: Project[];
+  customerId?: string;
+  now: number;
+}) {
+  const [month, setMonth] = useState("");
+  const [project, setProject] = useState("");
+  const window = reportWindow(month, now);
+  const rows = times.filter(
+    (t) =>
+      (!project || t.project_id === project) && reportSeconds(t, window) > 0,
+  );
+  const total = (kind: string, approved = false) =>
+    rows
+      .filter((t) => t.kind === kind && (!approved || t.approved_at))
+      .reduce((s, t) => s + reportSeconds(t, window), 0);
+  const query = new URLSearchParams({
+    ...(customerId ? { customer: customerId } : {}),
+    ...(project ? { project } : {}),
+    ...(month ? { month } : {}),
+  });
+  return (
+    <section className="panel">
+      <div className="panel-heading">
+        <div>
+          <p className="eyebrow">LEISTUNGSÜBERSICHT</p>
+          <h2>Zeitstand & Auszüge</h2>
+        </div>
+        <a
+          className="button small"
+          href={"/api/time-report?" + query}
+          target="_blank"
+          rel="noreferrer"
+        >
+          PDF herunterladen
+        </a>
+      </div>
+      <div className="form-pair">
+        <label>
+          Zeitraum
+          <select
+            value={month ? "month" : "all"}
+            onChange={(e) =>
+              setMonth(
+                e.target.value === "all"
+                  ? ""
+                  : new Date(now)
+                      .toLocaleDateString("sv-SE", {
+                        timeZone: "Europe/Berlin",
+                      })
+                      .slice(0, 7),
+              )
+            }
+          >
+            <option value="all">Aktueller Gesamtstand</option>
+            <option value="month">Monatsauszug</option>
+          </select>
+        </label>
+        {month && (
+          <label>
+            Monat
+            <input
+              type="month"
+              value={month}
+              onChange={(e) => setMonth(e.target.value)}
+            />
+          </label>
+        )}
+        <label>
+          Projektfilter
+          <select value={project} onChange={(e) => setProject(e.target.value)}>
+            <option value="">Alle Projekte</option>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <div className="metrics report-metrics">
+        {[
+          [total("internal"), "Intern"],
+          [total("external"), "Extern"],
+          [total("external", true), "Extern freigegeben"],
+        ].map(([v, l]) => (
+          <article className="metric" key={l}>
+            <span>{l}</span>
+            <strong>{timeDuration(Number(v))}</strong>
+          </article>
+        ))}
+      </div>
+      <p className="footnote">
+        Stand: {new Date(now).toLocaleString("de-DE")}. Interne und externe
+        Zeiten werden getrennt ausgewiesen. Monatsgrenzen: Europe/Berlin;
+        übergreifende Einträge werden anteilig berücksichtigt. Laufende Timer
+        sind vorläufig.
+      </p>
+      <div className="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Datum / Projekt</th>
+              <th>Leistung</th>
+              <th>Zeitart</th>
+              <th>Dauer</th>
+              <th>Prüfstatus</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((t) => (
+              <tr key={t.id}>
+                <td>
+                  {new Date(t.started_at).toLocaleString("de-DE", {
+                    timeZone: "Europe/Berlin",
+                  })}
+                  <small>
+                    {projects.find((p) => p.id === t.project_id)?.name}
+                  </small>
+                </td>
+                <td>{t.description}</td>
+                <td>
+                  {t.kind === "internal" ? "Intern" : "Extern"}
+                  <small>
+                    {
+                      {
+                        active: "Aktive Leistung",
+                        processing: "Verarbeitung",
+                        waiting: "Wartezeit",
+                        break: "Pause",
+                      }[t.category]
+                    }
+                  </small>
+                </td>
+                <td>{timeDuration(reportSeconds(t, window))}</td>
+                <td>
+                  {!t.stopped_at
+                    ? "Läuft"
+                    : t.approved_at
+                      ? "Freigegeben"
+                      : t.kind === "internal"
+                        ? "Nur intern"
+                        : "Ungeprüft"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {!rows.length && (
+          <p className="info-box">
+            Für diesen Zeitraum wurden noch keine Zeiten erfasst.
+          </p>
+        )}
+      </div>
+    </section>
+  );
+}
+export default function CustomerProfile({
+  customer: c,
+  section,
+  projects,
+  times,
+  invoices,
+  now,
+  busy,
+  mutate,
+  openProject,
+  track,
+}: {
+  customer: CustomerRecord;
+  section: string;
+  projects: Project[];
+  times: ReportTime[];
+  invoices: Invoice[];
+  now: number;
+  busy: boolean;
+  mutate: (
+    action: string,
+    payload: Record<string, unknown>,
+  ) => Promise<boolean>;
+  openProject: () => void;
+  track: (id: string) => void;
+}) {
+  const [saved, setSaved] = useState(false);
+  const cp = projects.filter((p) => p.customer_id === c.id),
+    ct = times.filter((t) => cp.some((p) => p.id === t.project_id)),
+    ci = invoices.filter((i) => i.customer_id === c.id);
+  async function save(e: React.SubmitEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const f = Object.fromEntries(new FormData(e.currentTarget));
+    setSaved(
+      await mutate("customer_update", {
+        ...c,
+        ...f,
+        payment_terms_days: Number(
+          f.payment_terms_days ?? c.payment_terms_days ?? 14,
+        ),
+        phone: f.phone ?? c.phone ?? "",
+        billing_name: f.billing_name ?? c.billing_name ?? "",
+        billing_email: f.billing_email ?? c.billing_email ?? "",
+        billing_address: f.billing_address ?? c.billing_address ?? "",
+        vat_id: f.vat_id ?? c.vat_id ?? "",
+        source: f.source ?? c.source ?? "NEX Consulting",
+      }),
+    );
+  }
+  return (
+    <>
+      <section className="panel customer-hero">
+        <div className="project-avatar">{c.name.slice(0, 2).toUpperCase()}</div>
+        <div>
+          <p className="eyebrow">KUNDENAKTE · {c.source || "NEX Consulting"}</p>
+          <h2>{c.name}</h2>
+          <p>
+            {c.contact || "Ansprechpartner ergänzen"} ·{" "}
+            {c.email || "E-Mail ergänzen"}
+          </p>
+        </div>
+        <Link
+          className="button small outline"
+          href={"/crm/portal?customer=" + c.id}
+        >
+          Kundenportal
+        </Link>
+      </section>
+      {section === "Übersicht" && (
+        <>
+          <div className="metrics">
+            {[
+              [cp.length, "Projekte"],
+              [
+                timeDuration(
+                  ct
+                    .filter((t) => t.kind === "internal")
+                    .reduce((s, t) => s + reportSeconds(t, [0, now]), 0),
+                ),
+                "Interne Zeit",
+              ],
+              [
+                timeDuration(
+                  ct
+                    .filter((t) => t.kind === "external")
+                    .reduce((s, t) => s + reportSeconds(t, [0, now]), 0),
+                ),
+                "Externe Zeit",
+              ],
+              [
+                money(
+                  ci
+                    .filter((i) => i.status === "issued")
+                    .reduce((s, i) => s + i.net_cents, 0),
+                ),
+                "Offene Rechnungen netto",
+              ],
+            ].map(([v, l]) => (
+              <article className="metric" key={l}>
+                <span>{l}</span>
+                <strong>{v}</strong>
+              </article>
+            ))}
+          </div>
+          <section className="panel">
+            <h2>Kontaktdaten & Anschrift</h2>
+            <p>
+              {c.email || "Keine E-Mail"} · {c.phone || "Keine Telefonnummer"}
+            </p>
+            <p className="preline">
+              {c.address || "Noch keine Anschrift hinterlegt."}
+            </p>
+            <p className="preline">{c.notes}</p>
+          </section>
+        </>
+      )}
+      {["Stammdaten", "Rechnungsdaten"].includes(section) && (
+        <section className="panel">
+          <h2>{section}</h2>
+          <form
+            key={c.id + section}
+            onSubmit={save}
+            onChange={() => setSaved(false)}
+            className="profile-form"
+          >
+            {(section === "Stammdaten"
+              ? [
+                  ["name", "Kundenname"],
+                  ["contact", "Ansprechpartner"],
+                  ["email", "E-Mail"],
+                  ["phone", "Telefon"],
+                  ["source", "Herkunft / Webseite"],
+                ]
+              : [
+                  ["billing_name", "Rechnungsempfänger"],
+                  ["billing_email", "Rechnungs-E-Mail"],
+                  ["vat_id", "USt-IdNr."],
+                ]
+            ).map(([name, label]) => (
+              <label key={name}>
+                {label}
+                <input
+                  name={name}
+                  type={name.includes("email") ? "email" : "text"}
+                  defaultValue={String(c[name as keyof CustomerRecord] ?? "")}
+                  required={name === "name"}
+                  maxLength={
+                    name === "phone" || name === "vat_id"
+                      ? 80
+                      : name === "name" ||
+                          name === "contact" ||
+                          name === "source"
+                        ? 160
+                        : 200
+                  }
+                  minLength={name === "name" ? 2 : undefined}
+                />
+              </label>
+            ))}
+            <label>
+              {section === "Stammdaten"
+                ? "Anschrift"
+                : "Abweichende Rechnungsanschrift"}
+              <textarea
+                name={section === "Stammdaten" ? "address" : "billing_address"}
+                rows={4}
+                maxLength={1000}
+                defaultValue={
+                  section === "Stammdaten" ? c.address : c.billing_address || ""
+                }
+              />
+            </label>
+            {section === "Stammdaten" ? (
+              <label>
+                Interne Notizen
+                <textarea
+                  name="notes"
+                  rows={4}
+                  maxLength={4000}
+                  defaultValue={c.notes}
+                />
+              </label>
+            ) : (
+              <>
+                <label>
+                  Zahlungsziel in Tagen
+                  <input
+                    name="payment_terms_days"
+                    type="number"
+                    min={0}
+                    max={365}
+                    defaultValue={c.payment_terms_days ?? 14}
+                    required
+                  />
+                </label>
+                <p className="footnote">
+                  Leere Rechnungsfelder verwenden die Stammdaten. Die Angaben
+                  bereiten die Rechnungserstellung vor.
+                </p>
+              </>
+            )}
+            <button className="button" disabled={busy}>
+              {busy ? "Wird gespeichert …" : "Änderungen speichern"}
+            </button>
+            {saved && <p role="status">Kundendaten gespeichert.</p>}
+          </form>
+        </section>
+      )}
+      {["Übersicht", "Projekte"].includes(section) && (
+        <section className="panel">
+          <div className="panel-heading">
+            <h2>Projekte</h2>
+            <button className="button small" onClick={openProject}>
+              Projekt anlegen
+            </button>
+          </div>
+          <div className="project-cards">
+            {cp.map((p) => (
+              <article className="project-card" key={p.id}>
+                <span className="badge">{p.status}</span>
+                <h3>{p.name}</h3>
+                <p>
+                  Budget:{" "}
+                  {p.budget_cents
+                    ? money(p.budget_cents)
+                    : "Noch nicht vereinbart"}
+                </p>
+                <p>
+                  Externe Zeit:{" "}
+                  {timeDuration(
+                    ct
+                      .filter(
+                        (t) => t.project_id === p.id && t.kind === "external",
+                      )
+                      .reduce((s, t) => s + reportSeconds(t, [0, now]), 0),
+                  )}
+                </p>
+                <button
+                  className="button small outline"
+                  onClick={() => track(p.id)}
+                >
+                  Zeit erfassen / nachtragen
+                </button>
+              </article>
+            ))}
+          </div>
+          {!cp.length && <p>Noch keine Projekte angelegt.</p>}
+        </section>
+      )}
+      {section === "Zeiten & Auszüge" && (
+        <TimeReport times={ct} projects={cp} customerId={c.id} now={now} />
+      )}
+      {section === "Rechnungen" && (
+        <section className="panel">
+          <h2>Rechnungen & Entwürfe</h2>
+          {ci.map((i) => (
+            <div className="task-line" key={i.id}>
+              <div>
+                <strong>{i.subject}</strong>
+                <small>
+                  {i.status === "draft"
+                    ? "Entwurf"
+                    : i.status === "paid"
+                      ? "Bezahlt"
+                      : i.status === "issued"
+                        ? "Ausgestellt"
+                        : "Storniert"}
+                </small>
+              </div>
+              <span>{money(i.net_cents)} netto</span>
+              <Link
+                className="text-link"
+                href={"/crm/rechnung/" + i.id}
+                target="_blank"
+              >
+                Beleg ansehen
+              </Link>
+            </div>
+          ))}
+          {!ci.length && <p>Noch keine Rechnungen für diesen Kunden.</p>}
+        </section>
+      )}
+    </>
+  );
+}

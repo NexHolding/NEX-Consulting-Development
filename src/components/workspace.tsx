@@ -1,6 +1,9 @@
 "use client";
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
+import { Brand } from "./brand";
+import CustomerProfile, { TimeReport } from "./customer-profile";
+import { reportSeconds, reportWindow } from "@/lib/time-report";
 import { useRouter } from "next/navigation";
 import {
   LayoutDashboard,
@@ -94,17 +97,6 @@ type Data = {
   invoices: Invoice[];
   leads: Lead[];
 };
-const nav = [
-  ["Dashboard", LayoutDashboard],
-  ["Kunden", Users],
-  ["Projekte", FolderKanban],
-  ["Zeiterfassung", Clock3],
-  ["Aufgaben", CheckSquare],
-  ["Betreuung", Repeat2],
-  ["Rechnungen", Receipt],
-  ["Anfragen", Inbox],
-  ["Einstellungen", Settings],
-] as const;
 const money = (c: number) =>
   new Intl.NumberFormat("de-DE", {
     style: "currency",
@@ -177,6 +169,8 @@ function Empty({
 export default function Workspace({ initial }: { initial: unknown }) {
   const [data, setData] = useState(initial as Data);
   const [tab, setTab] = useState("Dashboard");
+  const [customerId, setCustomerId] = useState("");
+  const [section, setSection] = useState("Übersicht");
   const [selected, setSelected] = useState("");
   const [search, setSearch] = useState("");
   const [modal, setModal] = useState("");
@@ -188,6 +182,71 @@ export default function Workspace({ initial }: { initial: unknown }) {
   const [category, setCategory] = useState("active");
   const [mobile, setMobile] = useState(false);
   const router = useRouter();
+  useEffect(() => {
+    function restore() {
+      const q = new URLSearchParams(window.location.search);
+      setTab(q.get("tab") || "Dashboard");
+      setCustomerId(q.get("customer") || "");
+      setSection(q.get("section") || "Übersicht");
+    }
+    restore();
+    window.addEventListener("popstate", restore);
+    return () => window.removeEventListener("popstate", restore);
+  }, []);
+  function navigate(nextTab: string, customer = "", nextSection = "Übersicht") {
+    setTab(nextTab);
+    setCustomerId(customer);
+    setSection(nextSection);
+    setSearch("");
+    setMobile(false);
+    const q = new URLSearchParams({
+      tab: nextTab,
+      ...(customer ? { customer, section: nextSection } : {}),
+    });
+    window.history.pushState(null, "", "/crm?" + q);
+  }
+  const customer = data.customers.find((c) => c.id === customerId);
+  const mainArea = ["Projekte", "Zeiterfassung", "Aufgaben"].includes(tab)
+    ? "Projekte"
+    : ["Rechnungen", "Betreuung"].includes(tab)
+      ? "Finanzen"
+      : tab === "Anfragen"
+        ? "Interessenten"
+        : tab;
+  const mainNav = [
+    ["Dashboard", LayoutDashboard],
+    ["Kunden", Users],
+    ["Interessenten", Inbox],
+    ["Projekte", FolderKanban],
+    ["Finanzen", Receipt],
+    ["Einstellungen", Settings],
+  ] as const;
+  const secondaryItems =
+    customer && tab === "Kunden"
+      ? [
+          "Übersicht",
+          "Stammdaten",
+          "Rechnungsdaten",
+          "Projekte",
+          "Zeiten & Auszüge",
+          "Rechnungen",
+        ]
+      : mainArea === "Projekte"
+        ? ["Projekte", "Zeiterfassung", "Aufgaben"]
+        : mainArea === "Finanzen"
+          ? ["Rechnungen", "Betreuung"]
+          : mainArea === "Interessenten"
+            ? ["Anfragen"]
+            : mainArea === "Kunden"
+              ? ["Kunden"]
+              : [
+                  "Dashboard",
+                  "Kunden",
+                  "Anfragen",
+                  "Projekte",
+                  "Zeiterfassung",
+                  "Rechnungen",
+                ];
   const modalRef = useRef<HTMLElement>(null);
   useEffect(() => {
     if (!modal) return;
@@ -266,10 +325,9 @@ export default function Workspace({ initial }: { initial: unknown }) {
   const month = new Date(now)
     .toLocaleDateString("sv-SE", { timeZone: "Europe/Berlin" })
     .slice(0, 7);
-  const monthTimes = data.time_entries.filter((t) =>
-    new Date(t.started_at)
-      .toLocaleDateString("sv-SE", { timeZone: "Europe/Berlin" })
-      .startsWith(month),
+  const monthWindow = reportWindow(month, now);
+  const monthTimes = data.time_entries.filter(
+    (t) => reportSeconds(t, monthWindow) > 0,
   );
   async function mutate(action: string, payload: Record<string, unknown>) {
     if (busy) return false;
@@ -308,6 +366,22 @@ export default function Workspace({ initial }: { initial: unknown }) {
         budget_cents: Math.round(Number(f.budget) * 100),
         waiting_billable: f.waiting_billable === "on",
       };
+    if (modal === "time_manual") {
+      const start = new Date(String(f.started_at));
+      const stop = new Date(String(f.stopped_at));
+      if (
+        !Number.isFinite(start.getTime()) ||
+        !Number.isFinite(stop.getTime())
+      ) {
+        setError("Bitte Beginn und Ende angeben.");
+        return;
+      }
+      payload = {
+        ...payload,
+        started_at: start.toISOString(),
+        stopped_at: stop.toISOString(),
+      };
+    }
     if (modal === "invoice")
       payload = {
         project_id: f.project_id,
@@ -440,25 +514,24 @@ export default function Workspace({ initial }: { initial: unknown }) {
   return (
     <div className="workspace">
       <aside className={"sidebar " + (mobile ? "visible" : "")}>
-        <Link href="/" className="brand">
-          <span className="brand-symbol">
-            n<span>↗</span>
-          </span>
-          <span>
-            NEX<span className="brand-small">WORKSPACE</span>
-          </span>
-        </Link>
+        <Brand />
         <Link className="button small" href="/crm/portal">
           Kundenportal verwalten
         </Link>
         <p className="sidebar-label">ARBEITSBEREICH</p>
         <nav>
-          {nav.map(([label, Icon]) => (
+          {mainNav.map(([label, Icon]) => (
             <button
-              className={tab === label ? "active" : ""}
+              className={mainArea === label ? "active" : ""}
               key={label}
               onClick={() => {
-                setTab(label);
+                navigate(
+                  label === "Finanzen"
+                    ? "Rechnungen"
+                    : label === "Interessenten"
+                      ? "Anfragen"
+                      : label,
+                );
                 setMobile(false);
                 setSearch("");
                 setError("");
@@ -466,7 +539,7 @@ export default function Workspace({ initial }: { initial: unknown }) {
             >
               <Icon size={18} />
               {label}
-              {label === "Anfragen" &&
+              {label === "Interessenten" &&
                 data.leads.filter((l) => l.status === "Neu").length > 0 && (
                   <span className="nav-count">
                     {data.leads.filter((l) => l.status === "Neu").length}
@@ -493,6 +566,58 @@ export default function Workspace({ initial }: { initial: unknown }) {
             <LogOut size={17} />
           </button>
         </div>
+      </aside>
+      <aside className="secondary-sidebar">
+        <div className="secondary-heading">
+          <p className="eyebrow">
+            {customer && tab === "Kunden" ? "KUNDENAKTE" : "ARBEITSBEREICH"}
+          </p>
+          <h2>{customer && tab === "Kunden" ? customer.name : mainArea}</h2>
+        </div>
+        <nav aria-label="Zweite Navigation">
+          {customer && tab === "Kunden" && (
+            <button className="text-link" onClick={() => navigate("Kunden")}>
+              ← Alle Kunden
+            </button>
+          )}
+          {secondaryItems.map((item) => (
+            <button
+              key={item}
+              className={
+                (customer && tab === "Kunden" ? section === item : tab === item)
+                  ? "active"
+                  : ""
+              }
+              onClick={() =>
+                customer && tab === "Kunden"
+                  ? navigate("Kunden", customer.id, item)
+                  : navigate(item)
+              }
+            >
+              <strong>
+                {item === "Anfragen" ? "Interessenten & Anfragen" : item}
+              </strong>
+              <small>
+                {
+                  {
+                    Übersicht: "Kundenakte im Überblick",
+                    Stammdaten: "Kontakt, Anschrift und Notizen",
+                    Rechnungsdaten: "Empfänger und Zahlungsziel",
+                    Projekte: "Projektstand und Leistungen",
+                    "Zeiten & Auszüge": "Aktueller Stand und Monats-PDF",
+                    Rechnungen: "Belege und Abrechnung",
+                    Betreuung: "Wiederkehrende Leistungen",
+                    Kunden: "Zentrale Kundendatenbank",
+                    Anfragen: "Neue Kontakte und Verkaufsstatus",
+                    Zeiterfassung: "Timer, Nachträge und Auszüge",
+                    Aufgaben: "Nächste Schritte",
+                    Dashboard: "Kennzahlen und Überblick",
+                  }[item]
+                }
+              </small>
+            </button>
+          ))}
+        </nav>
       </aside>
       <div className="workspace-main">
         <header className="workspace-header">
@@ -521,7 +646,15 @@ export default function Workspace({ initial }: { initial: unknown }) {
           <div className="workspace-title">
             <div>
               <p className="eyebrow">NEX CONSULTING</p>
-              <h1>{tab === "Dashboard" ? "Guten Tag. Was steht an?" : tab}</h1>
+              <h1>
+                {customer && tab === "Kunden"
+                  ? section
+                  : tab === "Dashboard"
+                    ? "Ihr Unternehmen im Überblick"
+                    : tab === "Anfragen"
+                      ? "Interessenten & Anfragen"
+                      : tab}
+              </h1>
               <p>
                 {tab === "Dashboard"
                   ? "Ihre Projekte, Kunden und nächsten Schritte. An einem Ort."
@@ -652,7 +785,10 @@ export default function Workspace({ initial }: { initial: unknown }) {
                       {duration(
                         monthTimes
                           .filter((t) => t.kind === "internal")
-                          .reduce((s, t) => s + seconds(t, now), 0),
+                          .reduce(
+                            (s, t) => s + reportSeconds(t, monthWindow),
+                            0,
+                          ),
                       )}
                     </strong>
                   </div>
@@ -662,13 +798,16 @@ export default function Workspace({ initial }: { initial: unknown }) {
                       {duration(
                         monthTimes
                           .filter((t) => t.kind === "external")
-                          .reduce((s, t) => s + seconds(t, now), 0),
+                          .reduce(
+                            (s, t) => s + reportSeconds(t, monthWindow),
+                            0,
+                          ),
                       )}
                     </strong>
                   </div>
                   <p className="footnote">
-                    Erfasste Dauer der in diesem Monat gestarteten Einträge.
-                    Noch keine Rechnungsfreigabe.
+                    Anteilig erfasste Dauer innerhalb dieses Monats
+                    (Europe/Berlin). Noch keine Rechnungsfreigabe.
                   </p>
                   <button
                     className="text-link"
@@ -680,7 +819,25 @@ export default function Workspace({ initial }: { initial: unknown }) {
               </div>
             </>
           )}
-          {tab === "Kunden" && (
+          {tab === "Kunden" && customer && (
+            <CustomerProfile
+              key={customer.id}
+              customer={customer}
+              section={section}
+              projects={data.projects}
+              times={data.time_entries}
+              invoices={data.invoices}
+              now={now}
+              busy={busy}
+              mutate={mutate}
+              openProject={() => open("project")}
+              track={(id) => {
+                setSelected(id);
+                navigate("Zeiterfassung");
+              }}
+            />
+          )}
+          {tab === "Kunden" && !customer && (
             <section className="panel">
               <div className="panel-heading">
                 <div className="search-field">
@@ -713,7 +870,18 @@ export default function Workspace({ initial }: { initial: unknown }) {
                         <div className="project-avatar">
                           {c.name.slice(0, 2).toUpperCase()}
                         </div>
-                        <h3>{c.name}</h3>
+                        <h3>
+                          <a
+                            className="customer-profile-link"
+                            href={"/crm?tab=Kunden&customer=" + c.id}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              navigate("Kunden", c.id);
+                            }}
+                          >
+                            {c.name} <ArrowUpRight size={17} />
+                          </a>
+                        </h3>
                         <p>{c.contact || "Kein Ansprechpartner"}</p>
                         <span>{c.email || "Keine E-Mail hinterlegt"}</span>
                         {c.address && <p className="preline">{c.address}</p>}
@@ -773,7 +941,12 @@ export default function Workspace({ initial }: { initial: unknown }) {
                     >
                       <div className="card-top">
                         <span className="badge">{p.package}</span>
-                        <span>{customerName(p.customer_id)}</span>
+                        <button
+                          className="text-link"
+                          onClick={() => navigate("Kunden", p.customer_id)}
+                        >
+                          {customerName(p.customer_id)}
+                        </button>
                       </div>
                       <h3>{p.name}</h3>
                       <p>
@@ -812,7 +985,10 @@ export default function Workspace({ initial }: { initial: unknown }) {
                                     t.project_id === p.id &&
                                     t.kind === "internal",
                                 )
-                                .reduce((s, t) => s + seconds(t, now), 0),
+                                .reduce(
+                                  (s, t) => s + reportSeconds(t, monthWindow),
+                                  0,
+                                ),
                             )}
                           </strong>
                         </span>
@@ -850,6 +1026,21 @@ export default function Workspace({ initial }: { initial: unknown }) {
           {tab === "Zeiterfassung" && (
             <>
               {timerPanel}
+              <div className="panel-heading">
+                <p>Vergangene Leistungen mit Beginn und Ende erfassen.</p>
+                <button
+                  className="button small"
+                  disabled={!data.projects.length}
+                  onClick={() => open("time_manual")}
+                >
+                  Zeit nachtragen
+                </button>
+              </div>
+              <TimeReport
+                times={data.time_entries}
+                projects={data.projects}
+                now={now}
+              />
               <section className="panel">
                 <div className="panel-heading">
                   <h2>Erfasste Zeiten</h2>
@@ -1248,6 +1439,7 @@ export default function Workspace({ initial }: { initial: unknown }) {
               <h2 id="modal-title">
                 {
                   {
+                    time_manual: "Vergangene Zeit nachtragen",
                     customer: "Kunde anlegen",
                     project: "Projekt anlegen",
                     task: "Aufgabe anlegen",
@@ -1304,7 +1496,11 @@ export default function Workspace({ initial }: { initial: unknown }) {
                   </label>
                   <label>
                     Kunde
-                    <select name="customer_id" required>
+                    <select
+                      name="customer_id"
+                      required
+                      defaultValue={customerId}
+                    >
                       <option value="">Bitte auswählen</option>
                       {data.customers.map((c) => (
                         <option value={c.id} key={c.id}>
@@ -1358,6 +1554,70 @@ export default function Workspace({ initial }: { initial: unknown }) {
                     ))}
                   </select>
                 </label>
+              )}
+              {modal === "time_manual" && (
+                <>
+                  <label>
+                    Projekt
+                    <select name="project_id" required defaultValue={selected}>
+                      <option value="">Bitte auswählen</option>
+                      {data.projects
+                        .filter((p) => p.status !== "Archiviert")
+                        .map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name}
+                          </option>
+                        ))}
+                    </select>
+                  </label>
+                  <div className="form-pair">
+                    <label>
+                      Beginn
+                      <input name="started_at" type="datetime-local" required />
+                    </label>
+                    <label>
+                      Ende
+                      <input name="stopped_at" type="datetime-local" required />
+                    </label>
+                  </div>
+                  <p className="footnote">
+                    Uhrzeit in Ihrer lokalen Zeitzone (
+                    {Intl.DateTimeFormat().resolvedOptions().timeZone}). Maximal
+                    24 Stunden pro Eintrag.
+                  </p>
+                  <div className="form-pair">
+                    <label>
+                      Zeitart
+                      <select name="kind">
+                        <option value="internal">Interne Arbeitszeit</option>
+                        <option value="external">Externe Projektzeit</option>
+                      </select>
+                    </label>
+                    <label>
+                      Kategorie
+                      <select name="category">
+                        {Object.entries(categories).map(([v, l]) => (
+                          <option key={v} value={v}>
+                            {l}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                  <label>
+                    Leistungsbeschreibung
+                    <textarea
+                      name="description"
+                      required
+                      minLength={3}
+                      maxLength={1000}
+                    />
+                  </label>
+                  <p className="footnote">
+                    Externe Nachträge werden zunächst ungeprüft gespeichert. Die
+                    Abrechnungsfreigabe erfolgt separat.
+                  </p>
+                </>
               )}
               {modal === "task" && (
                 <label>

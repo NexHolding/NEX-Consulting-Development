@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { Brand } from "./brand";
 import Image from "next/image";
 import { useState } from "react";
 import {
@@ -16,7 +17,7 @@ import {
   Plus,
   Minus,
 } from "lucide-react";
-import { packages, care, projects } from "@/lib/content";
+import { brandSlogan, packages, care, projects } from "@/lib/content";
 const services = [
   {
     icon: Globe2,
@@ -49,18 +50,6 @@ const services = [
     text: "Technische Pflege, vereinbarte Änderungen und persönliche Betreuung. Monatlich planbar.",
   },
 ];
-export function Brand() {
-  return (
-    <Link href="/" className="brand" aria-label="NEX Consulting Startseite">
-      <span className="brand-symbol">
-        n<span>↗</span>
-      </span>
-      <span>
-        NEX<span className="brand-small">CONSULTING</span>
-      </span>
-    </Link>
-  );
-}
 export default function Landing() {
   const [menu, setMenu] = useState(false);
   const [selected, setSelected] = useState("Noch offen");
@@ -100,8 +89,7 @@ export default function Landing() {
   return (
     <div className="consulting-site">
       <div className="preview-strip">
-        DESIGNVORSCHAU{" "}
-        <span>NEX Consulting · Ihr nächster Schritt beginnt hier.</span>
+        DESIGNVORSCHAU <span>NEX Consulting · {brandSlogan}</span>
       </div>
       <header className="site-header wrap">
         <Brand />
@@ -149,7 +137,7 @@ export default function Landing() {
           <div className="hero-copy">
             <p className="eyebrow">
               <span className="dot" />
-              DIGITALE LÖSUNGEN. PERSÖNLICH ENTWICKELT.
+              {brandSlogan}
             </p>
             <h1>
               Ihre nächste
@@ -612,7 +600,7 @@ export default function Landing() {
       </main>
       <footer className="wrap site-footer">
         <Brand />
-        <p>Digitale Lösungen. Persönlich entwickelt.</p>
+        <p>{brandSlogan}</p>
         <Link href="/login">
           Mitarbeiterlogin <ArrowUpRight size={14} />
         </Link>

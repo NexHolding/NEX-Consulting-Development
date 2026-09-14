@@ -23,7 +23,7 @@ Zusätzlich gefunden: `/Users/neveexperiences/Desktop/NEX Consulting/NEX Consult
 - Insolvenzhelden-Development: `/Users/neveexperiences/Documents/02 Development/Insolvenzhelden`.
 - Aurelia-Flow-Development: `/Users/neveexperiences/Desktop/Aurelia flow development`.
 
-Die genannte Web-Referenz wurde als `https://insolvenzhelden-6.vercel.app` interpretiert, konnte aber nicht geladen werden. Die Designableitung basiert deshalb auf dem vorhandenen lokalen Code; die genaue Referenzadresse ist noch zu bestätigen.
+Die vom Nutzer bestätigte Web-Referenz lautet `https://insolvenzhelden-six.vercel.app`. Der aktuelle Schwarz-Gold-Auftritt wurde am 11. September 2026 geprüft und als Projektvorschau aufgenommen. Der lokale Insolvenzhelden-Code enthält noch einen älteren Designstand und ist für die aktuelle Vorschau nicht maßgeblich.
 
 Diese tatsächlich geprüften Insolvenzhelden-Dateien als strukturelle Vorlage lesen:
 
@@ -138,6 +138,8 @@ Definitionen für Website und Vertrag:
 Leistungen · Projekte · Pakete · Betreuung · Ablauf · Kundenlogin. Hauptbutton: **Projekt besprechen**.
 
 ### Hero
+
+Verbindlicher Markenslogan: **BUILD WHAT’S NEX(T).** Im Hero und Footer verwenden.
 
 Kleine Zeile: **Websites · Automatisierung · KI · CRM**
 

@@ -14,6 +14,16 @@ Vorher passende Prüfungen durchführen. Zugangsdaten, lokale `.env`-Dateien, Si
 
 ## Marke
 
+Verbindliches Original-Logo seit 14.09.2026: `public/brand/nex-consulting-logo.png`; Signet: `public/brand/nex-consulting-icon.png`. In Website, CRM, Portal, Login und Belegen verwenden; keine nachgebauten NEX-Schriftzüge oder Platzhalter. Originalgrafik nicht verändern. Transparenten Außenrand nur im Layout ausgleichen. Brandfarben: Anthrazit `#292929`, Gold `#ae884c`. Typografie laut beigefügter Vorlage: Bricolage Grotesque und Meedori Sans. Die im Logo eingebettete Schrift bleibt Teil der Originalgrafik; separat gesetzter Slogan folgt der verbindlichen Textvorgabe unten.
+
+Logoauswahl je nach Layout (ausdrückliche Nutzervorgabe vom 14.09.2026):
+- Nebeneinander: `public/brand/nex-consulting-logo.png` für breite, flache Flächen wie Website-/Portal-Kopfzeilen und Belegköpfe.
+- Übereinander: `public/brand/nex-consulting-logo-stacked.png` für kompakte Flächen mit ausreichend Höhe, beispielsweise zentrale Markenflächen, Titelbilder oder passende Login-Layouts. Original: 6250 × 3750 Pixel; enthält einen festen anthrazitfarbenen Hintergrund `#292929`, ist nicht transparent.
+- Signet: `public/brand/nex-consulting-icon.png` für Favicons und sehr kleine quadratische Plätze.
+Die passende Originalvariante nach Platz, Seitenverhältnis, Hintergrund und Lesbarkeit wählen. Niemals strecken, stauchen, umfärben, nachzeichnen oder Bestandteile neu zusammensetzen. Das gestapelte Logo nicht mit dem horizontalen Zuschnitt der bestehenden `BrandLogo`-Komponente darstellen; sein eigenes Seitenverhältnis beibehalten. Keine Logobestandteile abschneiden. Siehe `public/brand/README.md`.
+
+Verbindlicher Slogan seit 14.09.2026: **BUILD WHAT’S NEX(T).** Schreibweise einschließlich typografischem Apostroph, Klammern und Schlusspunkt beibehalten.
+
 Die Marke heißt **NEX Consulting**, nicht Next Consulting. Die ausdrücklich gewünschte Domain bleibt `www.next-consulting.com` (.com, nicht .de). Design: Schwarz-Gold. Eigene Bildmotive verwenden; keine identische Wiederverwendung des Insolvenzhelden-Herofotos.
 
 <!-- BEGIN:nextjs-agent-rules -->

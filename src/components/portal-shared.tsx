@@ -1,6 +1,6 @@
 "use client";
 import { useState, type ReactNode } from "react";
-import Link from "next/link";
+import { Brand } from "./brand";
 import { useRouter } from "next/navigation";
 import { display, type Row } from "@/lib/portal-model";
 export type Field = {
@@ -129,9 +129,7 @@ export function Shell({
   return (
     <div className="portal-shell">
       <header className="portal-header">
-        <Link className="portal-brand" href={admin ? "/crm" : "/portal"}>
-          NEX <span>CONSULTING</span>
-        </Link>
+        <Brand href={admin ? "/crm" : "/portal"} className="portal-brand" />
         <span>{admin ? "Portalverwaltung" : "Ihr Kundenportal"}</span>
         <button
           className="text-link"

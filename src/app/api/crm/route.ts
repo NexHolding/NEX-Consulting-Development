@@ -43,6 +43,55 @@ export async function POST(request: Request) {
     const client = db();
     let result;
     switch (action) {
+      case "customer_update": {
+        const p = z
+          .object({
+            id: uuid,
+            name: text.max(160),
+            contact: z.string().max(160),
+            email: z.union([z.email(), z.literal("")]),
+            address: z.string().max(1000),
+            notes: z.string().max(4000),
+            phone: z.string().max(80),
+            billing_name: z.string().max(200),
+            billing_email: z.union([z.email(), z.literal("")]),
+            billing_address: z.string().max(1000),
+            vat_id: z.string().max(80),
+            payment_terms_days: z.number().int().min(0).max(365),
+            source: z.string().max(160),
+          })
+          .parse(payload);
+        const { id, ...fields } = p;
+        result = await client
+          .from("nc_customers")
+          .update(fields)
+          .eq("id", id)
+          .select("id")
+          .single();
+        break;
+      }
+      case "time_manual": {
+        const p = z
+          .object({
+            project_id: uuid,
+            kind: z.enum(["internal", "external"]),
+            category: z.enum(["active", "processing", "waiting", "break"]),
+            description: z.string().trim().min(3).max(1000),
+            started_at: z.iso.datetime(),
+            stopped_at: z.iso.datetime(),
+          })
+          .parse(payload);
+        result = await client.rpc("nc_manual_time", {
+          p_user: user.id,
+          p_project: p.project_id,
+          p_kind: p.kind,
+          p_category: p.category,
+          p_description: p.description,
+          p_start: p.started_at,
+          p_stop: p.stopped_at,
+        });
+        break;
+      }
       case "customer": {
         const p = z
           .object({

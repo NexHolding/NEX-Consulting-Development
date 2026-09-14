@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Brand } from "./brand";
 import { ArrowUpRight, LockKeyhole, ArrowLeft } from "lucide-react";
 export default function Login() {
   const router = useRouter();
@@ -25,11 +26,9 @@ export default function Login() {
           <br />
           Ein Ort für die Arbeit dahinter.
         </p>
-        <span className="login-signature">
-          NEX<span>CONSULTING</span>
-        </span>
       </section>
       <section className="login-panel">
+        <Brand className="login-brand" />
         <div className="lock-mark">
           <LockKeyhole />
         </div>

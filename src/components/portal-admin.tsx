@@ -12,12 +12,18 @@ import {
 export default function PortalAdmin({
   initial,
   actorRole,
+  initialCustomerId,
 }: {
   initial: PortalData;
   actorRole: string;
+  initialCustomerId?: string;
 }) {
   const [data, setData] = useState(initial);
-  const [customerId, setCustomer] = useState(initial.customers[0]?.id || "");
+  const [customerId, setCustomer] = useState(
+    initial.customers.find((c) => c.id === initialCustomerId)?.id ||
+      initial.customers[0]?.id ||
+      "",
+  );
   const [tab, setTab] = useState("Aufträge");
   const [selected, setSelected] = useState("");
   const [error, setError] = useState("");

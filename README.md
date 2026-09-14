@@ -57,3 +57,31 @@ Ohne zusätzliche Konfiguration arbeitet ein lokaler, im Adminportal als solcher
 ### Portaltests
 
 `node --env-file=.env.local tests/portal-integration.mjs` prüft Rollen, Kundentrennung, Freigaben, PDF-Zugriff, Ticketannahme und Zuordnungen mit synthetischen Datensätzen. `BROWSER_QA=1` ergänzt Headless-Browsertests für Login, Auftragsdetails, Ticketformular und mobile Darstellung. Alle Testkonten, Daten und Dateien werden im selben Lauf im finally-Block bereinigt.
+
+### Kundenakte und Leistungsnachweise
+
+Im CRM öffnet der Kundenname die Kundenakte. Hauptnavigation und kontextbezogene
+zweite Navigation trennen Kunden, Interessenten, Projektarbeit und Finanzen.
+Die Kundenakte bietet Stammdaten, abweichende Rechnungsdaten, Herkunft/Webseite,
+Projekte, Zeitstand und Belege. Direkte Kundenlinks bleiben nach Neuladen erhalten.
+
+Unter **Projekte → Zeiterfassung → Zeit nachtragen** lassen sich abgeschlossene
+Leistungen mit Beginn, Ende, Zeitart und Beschreibung erfassen. Nachträge dürfen
+höchstens 24 Stunden umfassen, nicht in der Zukunft liegen und keine Zeiten
+desselben Mitarbeiters und derselben Zeitart überschneiden. Externe Leistungen
+benötigen weiterhin eine separate Abrechnungsfreigabe.
+
+**Zeiten & Auszüge** erstellt geschützte PDF-Downloads für den Gesamtstand oder
+einen ausgewählten Monat, optional nach Projekt gefiltert. Monatsgrenzen werden
+in Europe/Berlin berechnet; übergreifende Zeiten werden anteilig berücksichtigt.
+Interne und externe Zeiten sind unabhängige Größen, keine gemeinsame Summe.
+
+Datenbankerweiterung: `20260914120000_customer_profiles_time.sql`.
+Rechnungsversand und der automatische Buchhaltungsimport weiterer Webseiten
+sind weiterhin separate Ausbaustufen. Herkunftsangaben allein stellen keine
+Systemverbindung her.
+
+Prüfungen: `npm test`, `npm run build`. Für die isolierte Integration stehen
+`tests/customer-workspace-integration.mjs`, `TEST_BASE_URL` und
+`TEST_SESSION_FILE` (temporäre Admin-Testsitzung) bereit. Der Test benötigt die
+serverseitigen Supabase-Variablen und entfernt seine eigenen QA-Datensätze.
