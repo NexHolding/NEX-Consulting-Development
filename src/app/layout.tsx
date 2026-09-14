@@ -4,6 +4,7 @@ import { brandSlogan } from "@/lib/content";
 import "./globals.css";
 import "./reference-design.css";
 import "./brand.css";
+import "./crm-design.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.next-consulting.com"),
   title: {

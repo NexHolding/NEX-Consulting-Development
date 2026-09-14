@@ -183,6 +183,14 @@ export default function Workspace({ initial }: { initial: unknown }) {
   const [mobile, setMobile] = useState(false);
   const router = useRouter();
   useEffect(() => {
+    if (!mobile) return;
+    const close = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMobile(false);
+    };
+    window.addEventListener("keydown", close);
+    return () => window.removeEventListener("keydown", close);
+  }, [mobile]);
+  useEffect(() => {
     function restore() {
       const q = new URLSearchParams(window.location.search);
       setTab(q.get("tab") || "Dashboard");
@@ -513,16 +521,34 @@ export default function Workspace({ initial }: { initial: unknown }) {
   );
   return (
     <div className="workspace">
-      <aside className={"sidebar " + (mobile ? "visible" : "")}>
+      {mobile && (
+        <button
+          className="crm-nav-scrim"
+          aria-label="Navigation schließen"
+          onClick={() => setMobile(false)}
+        />
+      )}
+      <aside
+        id="crm-main-navigation"
+        className={"sidebar " + (mobile ? "visible" : "")}
+      >
+        <button
+          className="icon-button crm-nav-close"
+          aria-label="Menü schließen"
+          onClick={() => setMobile(false)}
+        >
+          <X size={18} />
+        </button>
         <Brand />
         <Link className="button small" href="/crm/portal">
           Kundenportal verwalten
         </Link>
         <p className="sidebar-label">ARBEITSBEREICH</p>
-        <nav>
+        <nav aria-label="Hauptnavigation">
           {mainNav.map(([label, Icon]) => (
             <button
               className={mainArea === label ? "active" : ""}
+              aria-current={mainArea === label ? "page" : undefined}
               key={label}
               onClick={() => {
                 navigate(
@@ -583,6 +609,11 @@ export default function Workspace({ initial }: { initial: unknown }) {
           {secondaryItems.map((item) => (
             <button
               key={item}
+              aria-current={
+                (customer && tab === "Kunden" ? section === item : tab === item)
+                  ? "page"
+                  : undefined
+              }
               className={
                 (customer && tab === "Kunden" ? section === item : tab === item)
                   ? "active"
@@ -624,6 +655,8 @@ export default function Workspace({ initial }: { initial: unknown }) {
           <button
             className="icon-button mobile-only"
             aria-label="Navigation"
+            aria-expanded={mobile}
+            aria-controls="crm-main-navigation"
             onClick={() => setMobile(!mobile)}
           >
             <Menu />

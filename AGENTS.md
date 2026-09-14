@@ -14,6 +14,8 @@ Vorher passende Prüfungen durchführen. Zugangsdaten, lokale `.env`-Dateien, Si
 
 ## Marke
 
+CRM-Gestaltung: Beide Navigationsebenen verwenden dieselbe dunkle Schwarz-Gold-Designsprache; keine helle zweite Seitenleiste. Für CRM, Portal und Login lokal eingebundene Geist-Schrift (UI, Formulare, Tabellen) und Bricolage Grotesque (Überschriften) verwenden. Einheitliche Typografie, dezente Trennlinien, tabellarische Ziffern und konsistente Karten-/Formularraster sind in `src/app/crm-design.css` zentral definiert.
+
 Verbindliches Original-Logo seit 14.09.2026: `public/brand/nex-consulting-logo.png`; Signet: `public/brand/nex-consulting-icon.png`. In Website, CRM, Portal, Login und Belegen verwenden; keine nachgebauten NEX-Schriftzüge oder Platzhalter. Originalgrafik nicht verändern. Transparenten Außenrand nur im Layout ausgleichen. Brandfarben: Anthrazit `#292929`, Gold `#ae884c`. Typografie laut beigefügter Vorlage: Bricolage Grotesque und Meedori Sans. Die im Logo eingebettete Schrift bleibt Teil der Originalgrafik; separat gesetzter Slogan folgt der verbindlichen Textvorgabe unten.
 
 Logoauswahl je nach Layout (ausdrückliche Nutzervorgabe vom 14.09.2026):

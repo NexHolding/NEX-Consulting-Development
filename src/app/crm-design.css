@@ -1,0 +1,1099 @@
+/* Shared visual system for the CRM, portal and account screens. */
+@font-face {
+  font-family: "NEX UI";
+  src: url("/fonts/Geist-Variable.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "NEX Display";
+  src: url("/fonts/BricolageGrotesque-Variable.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+}
+:is(.workspace, .portal-shell, .login-page, .invoice-paper) {
+  --crm-line: rgba(185, 199, 207, 0.13);
+  --crm-muted: #9daab4;
+  --crm-text: #edf1f3;
+  --crm-accent: #d5b476;
+  --border: var(--crm-line);
+  --muted: var(--crm-muted);
+  --text: var(--crm-text);
+  font-family: "NEX UI", Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: 0;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-synthesis: none;
+}
+:is(.workspace, .portal-shell, .login-page, .invoice-paper) :is(h1, h2, h3) {
+  font-family: "NEX Display", "NEX UI", sans-serif;
+  font-weight: 600;
+  font-optical-sizing: auto;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+  text-wrap: balance;
+  color: var(--crm-text);
+}
+:is(.workspace, .portal-shell, .login-page)
+  :is(button, input, select, textarea) {
+  font-family: inherit;
+}
+:is(.workspace, .portal-shell) :is(strong, b) {
+  font-weight: 600;
+}
+:is(.workspace, .portal-shell) .eyebrow {
+  font-family: "NEX UI", sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: 0.13em;
+  color: var(--crm-accent);
+}
+:is(.workspace, .portal-shell) :is(p, small) {
+  color: var(--crm-muted);
+}
+:is(.workspace, .portal-shell) :is(.button, .button.small) {
+  min-height: 42px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0;
+  border-radius: 9px;
+  line-height: 1.4;
+  box-shadow: none;
+}
+:is(.workspace, .portal-shell) .button:not(.outline):not(.stop) {
+  background: linear-gradient(135deg, #dbc18e, #b58e4c);
+  border: 1px solid #caa566;
+  color: #171c22;
+}
+:is(.workspace, .portal-shell) .button.outline {
+  background: #ffffff03;
+  border: 1px solid #ffffff23;
+  color: #e0e6e9;
+}
+:is(.workspace, .portal-shell) .button:hover {
+  filter: brightness(1.08);
+}
+:is(.workspace, .portal-shell) .text-link {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--crm-accent);
+}
+:is(.workspace, .portal-shell) .icon-button {
+  border: 1px solid var(--crm-line);
+  border-radius: 9px;
+  min-width: 40px;
+  min-height: 40px;
+}
+:is(.workspace, .portal-shell) :focus-visible {
+  outline: 2px solid var(--crm-accent);
+  outline-offset: 3px;
+}
+.workspace {
+  --primary-width: 220px;
+  --secondary-width: 244px;
+  background:
+    radial-gradient(ellipse at 85% 0, #142c351c, transparent 50%), #060d14;
+}
+.workspace .sidebar {
+  width: var(--primary-width);
+  padding: 0 16px 20px;
+  background: #081018;
+  border-right: 1px solid var(--crm-line);
+}
+.workspace .sidebar > .brand.nex-brand {
+  display: flex;
+  align-items: center;
+  height: 80px;
+  min-height: 80px;
+  width: 100%;
+  margin: 0 0 24px;
+  border-bottom: 1px solid var(--crm-line);
+}
+.workspace .sidebar > .button {
+  font-size: 12px;
+  min-height: 42px;
+  padding: 10px;
+}
+.workspace .sidebar-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: #7e8d98;
+  margin: 28px 12px 12px;
+}
+.workspace .sidebar nav {
+  gap: 6px;
+}
+.workspace .sidebar nav button {
+  font-size: 13px;
+  font-weight: 500;
+  min-height: 46px;
+  line-height: 1.4;
+  padding: 12px;
+  gap: 12px;
+  border-radius: 9px;
+  color: #a9b5be;
+}
+.workspace .sidebar nav button.active {
+  background: #ae884c14;
+  border-color: #ae884c36;
+  color: #ebd3a3;
+}
+.workspace .sidebar nav button:hover {
+  background: #ffffff06;
+  color: #f0f3f5;
+}
+.workspace .sidebar-bottom {
+  padding-top: 18px;
+  gap: 10px;
+  border-color: var(--crm-line);
+}
+.workspace .sidebar-bottom > div:nth-child(2) {
+  min-width: 0;
+}
+.workspace .sidebar-bottom strong {
+  font-size: 12px;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.workspace .sidebar-bottom small {
+  font-size: 10px;
+  line-height: 1.5;
+}
+.workspace .sidebar-bottom .avatar {
+  width: 32px;
+  height: 36px;
+  flex-shrink: 0;
+  font-size: 11px;
+}
+.workspace .sidebar-bottom .icon-button {
+  min-width: 32px;
+  min-height: 36px;
+}
+.workspace .secondary-sidebar {
+  left: var(--primary-width);
+  width: var(--secondary-width);
+  background: linear-gradient(180deg, #0d1821, #09131c 65%);
+  border-right: 1px solid var(--crm-line);
+  color: var(--crm-text);
+}
+.workspace .secondary-heading {
+  min-height: 80px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--crm-line);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.workspace .secondary-heading .eyebrow {
+  font-size: 9px;
+  margin: 0 0 5px;
+  color: #8e9ca6;
+  letter-spacing: 0.12em;
+}
+.workspace .secondary-heading h2 {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 0;
+  color: #edf1f3;
+  letter-spacing: -0.02em;
+}
+.workspace .secondary-sidebar nav {
+  padding: 22px 12px;
+  gap: 8px;
+}
+.workspace .secondary-sidebar nav button {
+  position: relative;
+  border: 1px solid transparent;
+  background: transparent;
+  padding: 13px 14px;
+  border-radius: 10px;
+  color: #acb8c1;
+  line-height: 1.45;
+}
+.workspace .secondary-sidebar nav button strong {
+  font-family: "NEX UI", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.45;
+  display: block;
+}
+.workspace .secondary-sidebar nav button small {
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.6;
+  margin-top: 5px;
+  color: #7f919e;
+}
+.workspace .secondary-sidebar nav button:hover {
+  background: #ffffff05;
+  color: #f0f3f5;
+}
+.workspace .secondary-sidebar nav button.active {
+  background: linear-gradient(110deg, #ae884c17, #ae884c07);
+  border-color: #ae884c32;
+  box-shadow: none;
+  color: #ecd6ae;
+}
+.workspace .secondary-sidebar nav button.active::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: 14px;
+  bottom: 14px;
+  width: 2px;
+  border-radius: 2px;
+  background: #cba568;
+}
+.workspace .secondary-sidebar nav button.active small {
+  color: #b1aa98;
+}
+.workspace .secondary-sidebar nav .text-link {
+  font-size: 12px;
+  padding: 8px 14px;
+  margin-bottom: 8px;
+  color: #8f9faa;
+}
+.workspace .workspace-main {
+  margin-left: calc(var(--primary-width) + var(--secondary-width));
+  container-type: inline-size;
+  container-name: crm-main;
+}
+.workspace .workspace-header {
+  height: 80px;
+  min-height: 80px;
+  padding: 16px 32px;
+  gap: 20px;
+  background: #080f17cc;
+  border-color: var(--crm-line);
+}
+.workspace .breadcrumbs {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.workspace .breadcrumbs span {
+  margin: 0 12px;
+  color: #586876;
+}
+.workspace .breadcrumbs strong {
+  font-weight: 500;
+}
+.workspace .workspace-date {
+  font-size: 12px;
+  color: #8a9aa6;
+}
+.workspace .workspace-content {
+  padding: 32px;
+  max-width: 1560px;
+}
+.workspace .workspace-title {
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+.workspace .workspace-title .eyebrow {
+  margin: 0 0 10px;
+  font-size: 10px;
+}
+.workspace .workspace-title h1 {
+  font-size: clamp(28px, 3cqi, 38px);
+  line-height: 1.2;
+  margin: 0 0 10px;
+  letter-spacing: -0.035em;
+}
+.workspace .workspace-title p:not(.eyebrow) {
+  font-size: 14px;
+  line-height: 1.65;
+  max-width: 68ch;
+}
+.workspace .workspace-title > .icon-button {
+  margin-top: 24px;
+  flex-shrink: 0;
+}
+.workspace :is(.panel, .metric, .project-card, .customer-card),
+.portal-shell .portal-card {
+  border: 1px solid var(--crm-line);
+  background: linear-gradient(140deg, #ffffff03, transparent 55%), #0c1720;
+  box-shadow: 0 4px 20px #0000000a;
+  border-radius: 14px;
+}
+.workspace .panel {
+  padding: 24px;
+  margin-bottom: 24px;
+}
+.workspace .panel-heading {
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+.workspace .panel h2 {
+  font-size: 21px;
+  line-height: 1.3;
+  letter-spacing: -0.025em;
+  margin: 0;
+}
+.workspace .panel-heading .eyebrow {
+  font-size: 10px;
+  margin: 0 0 7px;
+}
+.workspace .metrics {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.workspace .metric {
+  min-width: 0;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 146px;
+}
+.workspace .metric span {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #9faeb9;
+}
+.workspace .metric strong {
+  font-family: "NEX UI", sans-serif;
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  margin: 16px 0 8px;
+  color: #f0f3f5;
+}
+.workspace .metric small {
+  font-size: 11px;
+  color: #81949f;
+}
+.workspace .report-metrics {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 24px;
+}
+.workspace .timer-config {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 16px;
+  margin-bottom: 8px;
+}
+.workspace .timer-grid {
+  gap: 16px;
+}
+.workspace .timer {
+  padding: 24px;
+  background: #07111a;
+  border: 1px solid var(--crm-line);
+  border-radius: 12px;
+}
+.workspace .timer.running {
+  border-color: #b9965055;
+  background: #ae884c06;
+}
+.workspace .timer-label {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #c5ced5;
+}
+.workspace .timer-digits {
+  font-family: "NEX UI", sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(30px, 5cqi, 46px);
+  line-height: 1.2;
+  font-weight: 450;
+  letter-spacing: -0.04em;
+  margin: 24px 0 12px;
+}
+.workspace .timer p {
+  font-size: 12px;
+  line-height: 1.65;
+  min-height: 40px;
+  margin: 0 0 20px;
+}
+.workspace .timer .button {
+  min-height: 42px;
+  font-size: 13px;
+}
+.workspace :is(.footnote, .timer-panel > .footnote) {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #899ba8;
+}
+.workspace :is(.badge, .gold-badge),
+.portal-shell .portal-badge {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  padding: 5px 9px;
+  border-radius: 6px;
+}
+.workspace .badge:not(.green) {
+  color: #b9c4cc;
+  background: #ffffff04;
+  border-color: #ffffff12;
+}
+.workspace .dashboard-bottom {
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.workspace .month-stat {
+  padding: 20px 0;
+  border-color: var(--crm-line);
+}
+.workspace .month-stat span {
+  font-size: 12px;
+  margin-bottom: 8px;
+  color: var(--crm-muted);
+}
+.workspace .month-stat strong {
+  font-family: "NEX UI", sans-serif;
+  font-size: 28px;
+  font-weight: 450;
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
+}
+.workspace :is(.project-line, .task-line) {
+  gap: 14px;
+  padding: 18px 0;
+  border-color: var(--crm-line);
+}
+.workspace :is(.project-line, .task-line) strong {
+  font-size: 14px;
+  font-weight: 500;
+}
+.workspace :is(.project-line, .task-line) small {
+  font-size: 12px;
+  line-height: 1.6;
+  margin-top: 4px;
+}
+.workspace .project-avatar {
+  height: 42px;
+  width: 42px;
+  font-size: 12px;
+  background: #ae884c0e;
+  border-color: #ae884c2b;
+  color: #d7ba84;
+}
+.workspace :is(.customer-grid, .project-cards) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.workspace :is(.customer-card, .project-card) {
+  padding: 24px;
+}
+.workspace :is(.customer-card, .project-card) h3 {
+  font-size: 23px;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 20px 0 12px;
+}
+.workspace :is(.customer-card, .project-card) p {
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 8px 0;
+}
+.workspace .customer-card > span {
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.workspace .customer-card > small {
+  font-size: 12px;
+  margin-top: 20px;
+}
+.workspace .customer-card details {
+  font-size: 13px;
+}
+.workspace .customer-hero {
+  gap: 20px;
+  padding: 28px;
+}
+.workspace .customer-hero > div:nth-child(2) {
+  min-width: 0;
+}
+.workspace .customer-hero h2 {
+  font-size: 28px;
+  line-height: 1.25;
+  margin: 6px 0 8px;
+}
+.workspace .customer-hero p {
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.workspace .customer-hero .eyebrow {
+  font-size: 10px;
+}
+.workspace .project-numbers {
+  gap: 24px;
+  padding-top: 20px;
+  margin-top: 20px;
+}
+.workspace .project-numbers span {
+  font-size: 12px;
+}
+.workspace .project-numbers strong {
+  font-size: 20px;
+  font-weight: 500;
+}
+:is(.workspace, .portal-shell) label {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #b9c6cf;
+  gap: 8px;
+}
+.workspace :is(input, select, textarea),
+.portal-shell :is(input, select, textarea) {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: 0;
+  background: #071019;
+  border: 1px solid #b4cad427;
+  border-radius: 9px;
+  padding: 11px 13px;
+  min-height: 44px;
+  box-shadow: none;
+  color: #edf1f3;
+}
+:is(.workspace, .portal-shell) input::placeholder,
+:is(.workspace, .portal-shell) textarea::placeholder {
+  color: #738795;
+}
+:is(.workspace, .portal-shell) :is(input, select, textarea):focus {
+  border-color: #b59558;
+}
+.workspace input[type="checkbox"],
+.portal-shell input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  min-height: 18px;
+  accent-color: #c2a269;
+}
+.workspace .search-field {
+  max-width: 380px;
+}
+.workspace .search-field input {
+  padding-left: 40px;
+  margin: 0;
+}
+.workspace .profile-form {
+  gap: 20px;
+  margin-top: 24px;
+  max-width: 800px;
+}
+.workspace .profile-form label {
+  margin: 0;
+}
+.workspace .profile-form > :is(label:has(textarea), button, p) {
+  grid-column: 1 / -1;
+}
+.workspace .profile-form > button {
+  justify-self: start;
+}
+.workspace .panel > h2 + p {
+  margin-top: 12px;
+}
+.workspace .form-pair {
+  gap: 16px;
+}
+:is(.workspace, .portal-shell) .table-scroll {
+  border: 1px solid var(--crm-line);
+  border-radius: 10px;
+}
+:is(.workspace, .portal-shell) table {
+  font-size: 13px;
+  line-height: 1.55;
+  font-variant-numeric: tabular-nums;
+}
+:is(.workspace, .portal-shell) th {
+  font-size: 11px;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #9aaab6;
+  background: #ffffff03;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--crm-line);
+  white-space: nowrap;
+}
+:is(.workspace, .portal-shell) td {
+  padding: 16px;
+  border-bottom: 1px solid var(--crm-line);
+  vertical-align: top;
+  color: #c8d2d9;
+}
+:is(.workspace, .portal-shell) td strong {
+  font-size: 13px;
+  font-weight: 500;
+  color: #edf1f3;
+}
+:is(.workspace, .portal-shell) td small {
+  font-size: 11px;
+  line-height: 1.6;
+  margin-top: 5px;
+  color: #8e9fac;
+}
+:is(.workspace, .portal-shell) tbody tr:last-child td {
+  border-bottom: 0;
+}
+:is(.workspace, .portal-shell) tbody tr:hover {
+  background: #ffffff02;
+}
+.workspace .table-scroll > .info-box {
+  margin: 12px;
+}
+.workspace .info-box {
+  font-size: 13px;
+  line-height: 1.7;
+  background: #ae884c08;
+  border-color: #ae884c25;
+  color: #b6b09e;
+  padding: 16px 18px;
+  border-radius: 10px;
+}
+.workspace .empty {
+  padding: 40px 24px;
+}
+.workspace .empty h3 {
+  font-size: 22px;
+  margin: 0 0 12px;
+}
+.workspace .empty p {
+  font-size: 14px;
+  line-height: 1.7;
+  max-width: 46ch;
+}
+.workspace .settings-panel dl {
+  grid-template-columns: minmax(130px, 190px) minmax(0, 1fr);
+  font-size: 14px;
+  line-height: 1.7;
+  gap: 0;
+  margin-top: 24px;
+}
+.workspace .settings-panel :is(dt, dd) {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--crm-line);
+}
+.workspace .settings-panel dd {
+  padding-left: 20px;
+  overflow-wrap: anywhere;
+}
+.workspace .workspace-footer {
+  font-size: 10px;
+  line-height: 1.6;
+  padding: 8px 32px 28px;
+  letter-spacing: 0.06em;
+  color: #7f919e;
+}
+.workspace .modal {
+  background: #0e1922;
+  padding: 28px;
+  border: 1px solid #ae884c3b;
+  border-radius: 16px;
+}
+.workspace .modal h2 {
+  font-size: 26px;
+}
+.portal-shell {
+  background:
+    radial-gradient(ellipse at top right, #182a3322, transparent 60%), #060d14;
+}
+.portal-shell .portal-header {
+  min-height: 80px;
+  border-color: var(--crm-line);
+  padding: 20px 32px;
+  background: #081018;
+}
+.portal-shell .portal-admin-top {
+  padding: 20px 32px;
+  border-color: var(--crm-line);
+}
+.portal-shell .portal-layout {
+  grid-template-columns: 244px minmax(0, 1fr);
+}
+.portal-shell .portal-layout > nav {
+  padding: 24px 12px;
+  background: linear-gradient(180deg, #0d1821, #09131c);
+  border-color: var(--crm-line);
+  gap: 8px;
+}
+.portal-shell .portal-layout > nav button {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 14px;
+  color: #acb8c1;
+}
+.portal-shell .portal-layout > nav button.active {
+  background: #ae884c12;
+  color: #ecd6ae;
+  border-color: #ae884c32;
+  box-shadow: inset 2px 0 #cba568;
+}
+.portal-shell .portal-content {
+  padding: 32px;
+}
+.portal-shell .portal-content h1 {
+  font-size: 36px;
+  line-height: 1.2;
+  letter-spacing: -0.035em;
+  margin: 10px 0 28px;
+}
+.portal-shell .portal-content h2 {
+  font-size: 23px;
+  margin: 0 0 18px;
+}
+.portal-shell .portal-card {
+  padding: 24px;
+}
+.portal-shell .portal-card h3 {
+  font-size: 23px;
+  line-height: 1.3;
+}
+.portal-shell .portal-content p {
+  font-size: 14px;
+  line-height: 1.75;
+}
+.portal-shell .portal-content .eyebrow {
+  font-size: 10px;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+.portal-shell .portal-grid:empty {
+  display: none;
+}
+.portal-shell .portal-metrics strong {
+  font-family: "NEX UI", sans-serif;
+  font-size: 32px;
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
+}
+.portal-shell .portal-form {
+  gap: 20px;
+}
+.portal-shell :is(.portal-form, .portal-admin-top) label {
+  margin: 0;
+}
+.portal-shell .portal-details {
+  gap: 24px;
+}
+.portal-shell .portal-details dt {
+  font-size: 12px;
+  font-weight: 500;
+}
+.portal-shell .portal-details dd {
+  font-size: 14px;
+}
+.login-page .login-panel h2 {
+  font-size: 30px;
+}
+.login-page .login-panel > p:not(.eyebrow) {
+  font-size: 14px;
+  line-height: 1.7;
+}
+.login-page .login-panel :is(input, label, button) {
+  font-size: 14px;
+}
+.invoice-paper {
+  --crm-text: #202b33;
+  font-size: 14px;
+}
+.invoice-paper h1 {
+  font-size: 32px;
+}
+.invoice-paper h2 {
+  font-size: 22px;
+}
+.invoice-paper table {
+  font-size: 13px;
+}
+.workspace .crm-nav-close,
+.crm-nav-scrim {
+  display: none;
+}
+@container crm-main (min-width:760px) {
+  .workspace .profile-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@container crm-main (max-width:880px) {
+  .workspace .metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .workspace .report-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .workspace .report-metrics .metric {
+    padding: 16px;
+  }
+  .workspace .report-metrics .metric strong {
+    font-size: 25px;
+  }
+  .workspace .timer-config {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .workspace .timer-config > label:nth-child(2) {
+    grid-column: 1/-1;
+    grid-row: 2;
+  }
+  .workspace .dashboard-bottom {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+@container crm-main (max-width:640px) {
+  .workspace .customer-hero {
+    flex-wrap: wrap;
+  }
+  .workspace .customer-hero .button {
+    margin-left: 62px;
+  }
+  .workspace :is(.customer-grid, .project-cards, .timer-grid, .report-metrics) {
+    grid-template-columns: 1fr;
+  }
+  .workspace .report-metrics .metric {
+    padding: 22px;
+    min-height: 120px;
+  }
+  .workspace .report-metrics .metric strong {
+    font-size: 30px;
+  }
+}
+@media (max-width: 1100px) {
+  .workspace {
+    --primary-width: 200px;
+    --secondary-width: 220px;
+  }
+  .workspace .sidebar {
+    padding-inline: 12px;
+  }
+  .workspace .workspace-content {
+    padding: 24px;
+  }
+  .workspace .workspace-header {
+    padding-inline: 24px;
+  }
+  .workspace .workspace-date {
+    display: none;
+  }
+  .workspace .workspace-header > .text-link {
+    margin-left: auto;
+  }
+}
+@media (max-width: 900px) {
+  .workspace .sidebar {
+    width: 248px;
+    transform: translateX(-100%);
+    visibility: hidden;
+    z-index: 60;
+    overflow-y: auto;
+  }
+  .workspace .sidebar.visible {
+    transform: translateX(0);
+    visibility: visible;
+  }
+  .workspace .sidebar > .brand.nex-brand {
+    width: 180px;
+  }
+  .workspace .crm-nav-close {
+    display: flex;
+    position: absolute;
+    right: 12px;
+    top: 20px;
+    min-width: 32px;
+    min-height: 32px;
+  }
+  .workspace .crm-nav-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 59;
+    background: #0009;
+    border: 0;
+    backdrop-filter: blur(3px);
+  }
+  .workspace .secondary-sidebar {
+    position: relative;
+    left: 0;
+    width: 100%;
+    border-right: 0;
+    border-bottom: 1px solid var(--crm-line);
+    z-index: 20;
+  }
+  .workspace .secondary-heading {
+    min-height: 68px;
+    padding: 14px 24px;
+    border-bottom: 0;
+  }
+  .workspace .secondary-sidebar nav {
+    display: flex;
+    overflow-x: auto;
+    padding: 0 16px 14px;
+    gap: 6px;
+  }
+  .workspace .secondary-sidebar nav button {
+    padding: 11px 14px;
+    min-width: 0;
+    width: auto;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .workspace .secondary-sidebar nav button small {
+    display: none;
+  }
+  .workspace .secondary-sidebar nav .text-link {
+    margin: 0;
+    padding: 11px 14px;
+  }
+  .workspace .workspace-main {
+    margin-left: 0;
+  }
+  .workspace .workspace-header {
+    height: 64px;
+    min-height: 64px;
+    gap: 12px;
+  }
+  .workspace .workspace-header .mobile-only {
+    display: flex;
+  }
+  .workspace .workspace-title h1 {
+    font-size: 30px;
+  }
+  .portal-shell .portal-layout {
+    grid-template-columns: 1fr;
+  }
+  .portal-shell .portal-layout > nav {
+    flex-direction: row;
+    overflow: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--crm-line);
+    padding: 12px 16px;
+  }
+  .portal-shell .portal-layout > nav button {
+    flex-shrink: 0;
+  }
+  .portal-shell .portal-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 560px) {
+  .workspace .workspace-content,
+  .portal-shell .portal-content {
+    padding: 24px 16px;
+  }
+  .workspace .workspace-header {
+    padding: 12px 16px;
+  }
+  .workspace .workspace-title {
+    margin-bottom: 24px;
+    gap: 12px;
+  }
+  .workspace .workspace-title h1 {
+    font-size: 28px;
+  }
+  .workspace .workspace-title p:not(.eyebrow) {
+    font-size: 13px;
+  }
+  .workspace .metrics {
+    gap: 12px;
+  }
+  .workspace .metric {
+    padding: 16px;
+    min-height: 134px;
+  }
+  .workspace .metric strong {
+    font-size: 24px;
+  }
+  .workspace .metric span {
+    font-size: 11px;
+  }
+  .workspace :is(.panel, .customer-card, .project-card, .timer) {
+    padding: 20px;
+  }
+  .workspace .panel h2 {
+    font-size: 21px;
+  }
+  .workspace .panel-heading > .actions {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  .workspace .panel-heading > .search-field {
+    min-width: 100%;
+  }
+  .workspace .timer-config {
+    grid-template-columns: 1fr;
+  }
+  .workspace .timer-config > label:nth-child(2) {
+    grid-column: auto;
+    grid-row: auto;
+  }
+  .workspace .timer-digits {
+    font-size: 38px;
+  }
+  .workspace .customer-hero h2 {
+    font-size: 25px;
+  }
+  .workspace .customer-hero > div:nth-child(2) {
+    flex-basis: 100%;
+  }
+  .workspace .customer-hero .project-avatar {
+    display: none;
+  }
+  .workspace .customer-hero .button {
+    margin-left: 0;
+  }
+  .workspace .settings-panel dl {
+    grid-template-columns: 1fr;
+  }
+  .workspace .settings-panel dt {
+    padding-bottom: 4px;
+    border-bottom: 0;
+  }
+  .workspace .settings-panel dd {
+    padding: 0 0 16px;
+  }
+  .workspace .workspace-footer {
+    padding: 8px 16px 24px;
+    flex-wrap: wrap;
+  }
+  .portal-shell :is(.portal-header, .portal-admin-top) {
+    padding: 20px 16px;
+  }
+  .portal-shell .portal-content h1 {
+    font-size: 28px;
+  }
+  .portal-shell .portal-metrics {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .portal-shell .portal-form {
+    grid-template-columns: 1fr;
+  }
+  .workspace .modal {
+    padding: 22px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .workspace .sidebar {
+    transition: none;
+  }
+}
