@@ -7,6 +7,8 @@ export type ReportTime = {
   started_at: string;
   stopped_at: string | null;
   approved_at: string | null;
+  correction_round?: number | null;
+  change_request?: string | null;
 };
 // Berlin calendar boundaries, including changes between summer and winter time.
 export function berlinMidnight(day: string) {

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { timeAssignmentSchema } from "@/lib/time-assignment-schema";
 import { z } from "zod";
 import { admin, db, sameOrigin, snapshot } from "@/lib/server";
 import {
@@ -7,6 +8,13 @@ import {
 } from "@/lib/customer-schema";
 import { customerAddressPatch } from "@/lib/customer-fields";
 const uuid = z.string().uuid();
+const correctionRound = z
+  .number()
+  .int()
+  .min(1)
+  .max(999)
+  .nullable()
+  .default(null);
 const text = z.string().trim().min(2).max(200);
 const cents = z.number().int().min(0).max(1000000000);
 export async function GET() {
@@ -64,7 +72,49 @@ export async function POST(request: Request) {
           .single();
         break;
       }
+      case "correction_settings": {
+        const p = z
+          .object({
+            id: uuid,
+            included_correction_rounds: z
+              .number()
+              .int()
+              .min(0)
+              .max(999)
+              .nullable(),
+          })
+          .parse(payload);
+        result = await client.rpc("nc_correction_settings", {
+          p_user: user.id,
+          p_project: p.id,
+          p_included: p.included_correction_rounds,
+        });
+        break;
+      }
+      case "time_assignment": {
+        const { id } = z.object({ id: uuid }).parse(payload);
+        const assignment = timeAssignmentSchema.parse(payload);
+        result = await client.rpc("nc_assign_time_work", {
+          p_user: user.id,
+          p_entry: id,
+          p_round: assignment.correction_round,
+          p_change_request: assignment.change_request,
+        });
+        break;
+      }
+      case "time_correction": {
+        const p = z
+          .object({ id: uuid, correction_round: correctionRound })
+          .parse(payload);
+        result = await client.rpc("nc_assign_correction", {
+          p_user: user.id,
+          p_entry: p.id,
+          p_round: p.correction_round,
+        });
+        break;
+      }
       case "time_manual": {
+        const assignment = timeAssignmentSchema.parse(payload);
         const p = z
           .object({
             project_id: uuid,
@@ -73,6 +123,7 @@ export async function POST(request: Request) {
             description: z.string().trim().min(3).max(1000),
             started_at: z.iso.datetime(),
             stopped_at: z.iso.datetime(),
+            correction_round: correctionRound,
           })
           .parse(payload);
         result = await client.rpc("nc_manual_time", {
@@ -83,6 +134,8 @@ export async function POST(request: Request) {
           p_description: p.description,
           p_start: p.started_at,
           p_stop: p.stopped_at,
+          p_correction_round: assignment.correction_round,
+          p_change_request: assignment.change_request,
         });
         break;
       }
@@ -101,6 +154,13 @@ export async function POST(request: Request) {
             package: z.enum(["Launch", "Business", "Enterprise"]),
             budget_cents: cents,
             waiting_billable: z.boolean(),
+            included_correction_rounds: z
+              .number()
+              .int()
+              .min(0)
+              .max(999)
+              .nullable()
+              .default(null),
             notes: z.string().max(4000),
           })
           .parse(payload);
@@ -143,6 +203,7 @@ export async function POST(request: Request) {
         break;
       }
       case "timer": {
+        const assignment = timeAssignmentSchema.parse(payload);
         const p = z
           .object({
             project_id: uuid,
@@ -150,6 +211,7 @@ export async function POST(request: Request) {
             action: z.enum(["start", "stop"]),
             category: z.enum(["active", "processing", "waiting", "break"]),
             description: z.string().trim().min(3).max(1000),
+            correction_round: correctionRound,
           })
           .parse(payload);
         result = await client.rpc("nc_timer", {
@@ -159,6 +221,8 @@ export async function POST(request: Request) {
           p_action: p.action,
           p_category: p.category,
           p_description: p.description,
+          p_correction_round: assignment.correction_round,
+          p_change_request: assignment.change_request,
         });
         break;
       }

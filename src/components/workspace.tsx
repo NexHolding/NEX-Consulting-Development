@@ -4,6 +4,16 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "./app-link";
 import { Brand } from "./brand";
 import TimerCard from "./timer-card";
+import {
+  CorrectionFields,
+  CorrectionProjectSettings,
+  CorrectionAssignment,
+} from "./correction-rounds";
+import {
+  assignmentLabel,
+  validTimeAssignment,
+  type TimeAssignment,
+} from "@/lib/correction-rounds";
 import CustomerFields from "./customer-fields";
 import CustomerProfile, {
   TimeReport,
@@ -38,6 +48,7 @@ type Project = {
   package: string;
   budget_cents: number;
   waiting_billable: boolean;
+  included_correction_rounds?: number | null;
   notes: string;
 };
 type Time = {
@@ -50,6 +61,8 @@ type Time = {
   started_at: string;
   stopped_at: string | null;
   approved_at: string | null;
+  correction_round?: number | null;
+  change_request?: string | null;
 };
 type Task = { id: string; project_id: string; title: string; done: boolean };
 type Subscription = {
@@ -176,6 +189,15 @@ export default function Workspace({ initial }: { initial: unknown }) {
   const [now, setNow] = useState(data.capturedAt);
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("active");
+  const [assignment, setAssignment] = useState<TimeAssignment>({
+    correction_round: null,
+    change_request: null,
+  });
+  const [manualProject, setManualProject] = useState("");
+  const [manualAssignment, setManualAssignment] = useState<TimeAssignment>({
+    correction_round: null,
+    change_request: null,
+  });
   const [mobile, setMobile] = useState(false);
   const router = useRouter();
   useEffect(() => {
@@ -231,6 +253,7 @@ export default function Workspace({ initial }: { initial: unknown }) {
           "Übersicht",
           "Stammdaten",
           "Rechnungsdaten",
+          "Zugänge & Infrastruktur",
           "Projekte",
           "Zeiten & Auszüge",
           "Rechnungen",
@@ -378,6 +401,10 @@ export default function Workspace({ initial }: { initial: unknown }) {
         ...payload,
         budget_cents: Math.round(Number(f.budget) * 100),
         waiting_billable: f.waiting_billable === "on",
+        included_correction_rounds:
+          f.included_correction_rounds === ""
+            ? null
+            : Number(f.included_correction_rounds),
       };
     if (modal === "time_manual") {
       const start = new Date(String(f.started_at));
@@ -393,6 +420,7 @@ export default function Workspace({ initial }: { initial: unknown }) {
         ...payload,
         started_at: start.toISOString(),
         stopped_at: stop.toISOString(),
+        ...manualAssignment,
       };
     }
     if (modal === "invoice")
@@ -411,6 +439,10 @@ export default function Workspace({ initial }: { initial: unknown }) {
   function open(kind: string) {
     setError("");
     setNotice("");
+    if (kind === "time_manual") {
+      setManualProject(selected);
+      setManualAssignment({ correction_round: null, change_request: null });
+    }
     setModal(kind);
   }
 
@@ -429,7 +461,10 @@ export default function Workspace({ initial }: { initial: unknown }) {
           <select
             value={projectId}
             disabled={running.length > 0 || busy}
-            onChange={(e) => setSelected(e.target.value)}
+            onChange={(e) => {
+              setSelected(e.target.value);
+              setAssignment({ correction_round: null, change_request: null });
+            }}
           >
             <option value="">Projekt auswählen</option>
             {data.projects
@@ -464,6 +499,13 @@ export default function Workspace({ initial }: { initial: unknown }) {
           </select>
         </label>
       </div>
+      <CorrectionFields
+        project={data.projects.find((p) => p.id === projectId)}
+        times={data.time_entries}
+        assignment={assignment}
+        onChange={setAssignment}
+        disabled={busy}
+      />
       <div className="timer-grid">
         {(["internal", "external"] as const).map((kind) => {
           const live = running.find((t) => t.kind === kind);
@@ -479,13 +521,23 @@ export default function Workspace({ initial }: { initial: unknown }) {
               elapsed={duration(live ? seconds(live, now) : 0)}
               description={
                 live
-                  ? live.description
+                  ? live.description +
+                    " · " +
+                    assignmentLabel(
+                      live,
+                      data.projects.find((p) => p.id === live.project_id)
+                        ?.included_correction_rounds,
+                    )
                   : kind === "internal"
                     ? "Tatsächliche aktive Arbeit. Nur intern sichtbar."
                     : "Projektzeit einschließlich vereinbarter Begleitzeiten."
               }
               disabled={
-                busy || (!live && (!projectId || description.trim().length < 3))
+                busy ||
+                (!live &&
+                  (!projectId ||
+                    description.trim().length < 3 ||
+                    !validTimeAssignment(assignment)))
               }
               overdue={!!live && seconds(live, now) > 28800}
               onToggle={() =>
@@ -495,6 +547,12 @@ export default function Workspace({ initial }: { initial: unknown }) {
                   action: live ? "stop" : "start",
                   category: live?.category || category,
                   description: live?.description || description,
+                  ...(live
+                    ? {
+                        correction_round: live.correction_round ?? null,
+                        change_request: live.change_request ?? null,
+                      }
+                    : assignment),
                 })
               }
             />
@@ -503,8 +561,8 @@ export default function Workspace({ initial }: { initial: unknown }) {
       </div>
       <p className="footnote">
         Beide Timer sind unabhängig. Zum Projektwechsel laufende Timer stoppen.
-        Eine andere externe Zeitart gilt erst beim nächsten Start. Externe Zeit
-        wird erst nach Prüfung zur Abrechnung freigegeben.
+        Eine andere Zeitart oder Leistungszuordnung gilt erst beim nächsten
+        Start. Externe Zeit wird erst nach Prüfung zur Abrechnung freigegeben.
       </p>
     </section>
   );
@@ -623,6 +681,7 @@ export default function Workspace({ initial }: { initial: unknown }) {
                     Übersicht: "Kundenakte im Überblick",
                     Stammdaten: "Kontakt, Anschrift und Notizen",
                     Rechnungsdaten: "Empfänger und Zahlungsziel",
+                    "Zugänge & Infrastruktur": "Passwörter, Domains und E-Mail",
                     Projekte: "Projektstand und Leistungen",
                     "Zeiten & Auszüge": "Aktueller Stand und Monats-PDF",
                     Rechnungen: "Belege und Abrechnung",
@@ -993,6 +1052,13 @@ export default function Workspace({ initial }: { initial: unknown }) {
                           ))}
                         </select>
                       </label>
+                      <CorrectionProjectSettings
+                        key={p.id + String(p.included_correction_rounds)}
+                        project={p}
+                        times={data.time_entries}
+                        mutate={mutate}
+                        busy={busy}
+                      />
                       <div className="project-numbers">
                         <span>
                           Projektbudget<strong>{money(p.budget_cents)}</strong>
@@ -1062,6 +1128,8 @@ export default function Workspace({ initial }: { initial: unknown }) {
                 times={data.time_entries}
                 projects={data.projects}
                 now={now}
+                mutate={mutate}
+                busy={busy}
               />
               <section className="panel">
                 <div className="panel-heading">
@@ -1069,7 +1137,13 @@ export default function Workspace({ initial }: { initial: unknown }) {
                   <select
                     aria-label="Zeiten nach Projekt filtern"
                     value={selected}
-                    onChange={(e) => setSelected(e.target.value)}
+                    onChange={(e) => {
+                      setSelected(e.target.value);
+                      setAssignment({
+                        correction_round: null,
+                        change_request: null,
+                      });
+                    }}
                   >
                     <option value="">Alle Projekte</option>
                     {data.projects.map((p) => (
@@ -1099,6 +1173,34 @@ export default function Workspace({ initial }: { initial: unknown }) {
                               <td>
                                 <strong>{projectName(t.project_id)}</strong>
                                 <small>{t.description}</small>
+                                <small className="correction-label">
+                                  {assignmentLabel(
+                                    t,
+                                    data.projects.find(
+                                      (p) => p.id === t.project_id,
+                                    )?.included_correction_rounds,
+                                  )}
+                                </small>
+                                {t.change_request != null && (
+                                  <small className="change-request-note">
+                                    <strong>Kundenwunsch:</strong>{" "}
+                                    {t.change_request}
+                                  </small>
+                                )}
+                                <CorrectionAssignment
+                                  key={
+                                    t.id +
+                                    String(t.correction_round) +
+                                    String(t.change_request)
+                                  }
+                                  entry={t}
+                                  project={data.projects.find(
+                                    (p) => p.id === t.project_id,
+                                  )}
+                                  times={data.time_entries}
+                                  mutate={mutate}
+                                  busy={busy}
+                                />
                               </td>
                               <td>
                                 <span
@@ -1130,6 +1232,14 @@ export default function Workspace({ initial }: { initial: unknown }) {
                                 {t.approved_at ? (
                                   <span className="badge green">
                                     Freigegeben
+                                  </span>
+                                ) : t.kind === "external" &&
+                                  (t.correction_round != null ||
+                                    t.change_request != null) ? (
+                                  <span className="muted">
+                                    {t.change_request != null
+                                      ? "Abänderung · Gesonderte Abrechnung offen"
+                                      : "Abrechnung der Korrekturrunde offen"}
                                   </span>
                                 ) : t.kind === "external" &&
                                   t.stopped_at &&
@@ -1527,6 +1637,17 @@ export default function Workspace({ initial }: { initial: unknown }) {
                     </label>
                   </div>
                   <label>
+                    Im Paket enthaltene Korrekturrunden
+                    <input
+                      name="included_correction_rounds"
+                      type="number"
+                      min="0"
+                      max="999"
+                      step="1"
+                      placeholder="Noch nicht vereinbart"
+                    />
+                  </label>
+                  <label>
                     Projektbeschreibung
                     <textarea name="notes" maxLength={4000} />
                   </label>
@@ -1554,7 +1675,18 @@ export default function Workspace({ initial }: { initial: unknown }) {
                 <>
                   <label>
                     Projekt
-                    <select name="project_id" required defaultValue={selected}>
+                    <select
+                      name="project_id"
+                      required
+                      value={manualProject}
+                      onChange={(e) => {
+                        setManualProject(e.target.value);
+                        setManualAssignment({
+                          correction_round: null,
+                          change_request: null,
+                        });
+                      }}
+                    >
                       <option value="">Bitte auswählen</option>
                       {data.projects
                         .filter((p) => p.status !== "Archiviert")
@@ -1565,6 +1697,13 @@ export default function Workspace({ initial }: { initial: unknown }) {
                         ))}
                     </select>
                   </label>
+                  <CorrectionFields
+                    project={data.projects.find((p) => p.id === manualProject)}
+                    times={data.time_entries}
+                    assignment={manualAssignment}
+                    onChange={setManualAssignment}
+                    disabled={busy}
+                  />
                   <div className="form-pair">
                     <label>
                       Beginn

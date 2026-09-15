@@ -38,7 +38,9 @@ export async function GET(request: Request) {
         );
       title = data.name;
     }
-    let pq = client.from("nc_projects").select("id,name");
+    let pq = client
+      .from("nc_projects")
+      .select("id,name,included_correction_rounds");
     if (q.customer) pq = pq.eq("customer_id", q.customer);
     if (q.project) pq = pq.eq("id", q.project);
     const { data: projects, error } = await pq;
@@ -54,7 +56,7 @@ export async function GET(request: Request) {
         const { data, error } = await client
           .from("nc_time_entries")
           .select(
-            "id,project_id,kind,category,description,started_at,stopped_at,approved_at",
+            "id,project_id,kind,category,description,started_at,stopped_at,approved_at,correction_round,change_request",
           )
           .in(
             "project_id",

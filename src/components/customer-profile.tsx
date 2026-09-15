@@ -3,6 +3,16 @@ import Link from "./app-link";
 import { useState } from "react";
 import CustomerFields from "./customer-fields";
 import {
+  CorrectionProjectSettings,
+  CorrectionAssignment,
+} from "./correction-rounds";
+import {
+  correctionLabel,
+  assignmentLabel,
+  usedCorrectionRounds,
+} from "@/lib/correction-rounds";
+import CustomerAccess from "./customer-access";
+import {
   reportSeconds,
   reportWindow,
   timeDuration,
@@ -31,6 +41,7 @@ type Project = {
   status: string;
   budget_cents: number;
   hourly_rate_cents?: number;
+  included_correction_rounds?: number | null;
 };
 type Invoice = {
   id: string;
@@ -48,11 +59,18 @@ export function TimeReport({
   projects,
   customerId,
   now,
+  mutate,
+  busy = false,
 }: {
   times: ReportTime[];
   projects: Project[];
   customerId?: string;
   now: number;
+  mutate?: (
+    action: string,
+    payload: Record<string, unknown>,
+  ) => Promise<boolean>;
+  busy?: boolean;
 }) {
   const [month, setMonth] = useState("");
   const [project, setProject] = useState("");
@@ -141,6 +159,89 @@ export function TimeReport({
           </article>
         ))}
       </div>
+      {rows.some((t) => t.correction_round != null) && (
+        <div className="correction-overview">
+          <h3>Korrekturrunden im gewählten Zeitraum</h3>
+          <div className="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Projekt / Runde</th>
+                  <th>Paketzuordnung</th>
+                  <th>Intern</th>
+                  <th>Extern</th>
+                </tr>
+              </thead>
+              <tbody>
+                {projects.flatMap((p) =>
+                  usedCorrectionRounds(rows, p.id).map((n) => {
+                    const roundTimes = rows.filter(
+                      (t) => t.project_id === p.id && t.correction_round === n,
+                    );
+                    const sum = (kind: string) =>
+                      roundTimes
+                        .filter((t) => t.kind === kind)
+                        .reduce((s, t) => s + reportSeconds(t, window), 0);
+                    return (
+                      <tr key={p.id + ":" + n}>
+                        <td>
+                          {p.name}
+                          <small>Runde {n}</small>
+                        </td>
+                        <td>
+                          {
+                            correctionLabel(
+                              n,
+                              p.included_correction_rounds,
+                            ).split(" · ")[1]
+                          }
+                        </td>
+                        <td>{timeDuration(sum("internal"))}</td>
+                        <td>{timeDuration(sum("external"))}</td>
+                      </tr>
+                    );
+                  }),
+                )}
+              </tbody>
+            </table>
+          </div>
+          <p className="footnote">
+            Korrekturzeiten sind bereits in den obigen Summen enthalten. Eine
+            Runde kann mehrere Einträge enthalten. Zusatzzeit ist zur späteren
+            Abrechnungsprüfung vorgemerkt.
+          </p>
+        </div>
+      )}
+      {rows.some((t) => t.change_request != null) && (
+        <div className="correction-overview change-request-overview">
+          <h3>Abänderungen durch Kunden</h3>
+          <div className="metrics report-metrics">
+            {["internal", "external"].map((kind) => (
+              <article className="metric" key={kind}>
+                <span>
+                  {kind === "internal"
+                    ? "Abänderung · Intern"
+                    : "Abänderung · Extern"}
+                </span>
+                <strong>
+                  {timeDuration(
+                    rows
+                      .filter(
+                        (t) => t.kind === kind && t.change_request != null,
+                      )
+                      .reduce((sum, t) => sum + reportSeconds(t, window), 0),
+                  )}
+                </strong>
+              </article>
+            ))}
+          </div>
+          <p className="footnote">
+            Außerhalb des vereinbarten Projektumfangs; zur gesonderten
+            Abrechnung vorgemerkt. Diese Zeiten sind bereits in den Gesamtzeiten
+            enthalten und verbrauchen keine Korrekturrunden.
+          </p>
+        </div>
+      )}
       <p className="footnote">
         Stand: {new Date(now).toLocaleString("de-DE")}. Interne und externe
         Zeiten werden getrennt ausgewiesen. Monatsgrenzen: Europe/Berlin;
@@ -169,7 +270,35 @@ export function TimeReport({
                     {projects.find((p) => p.id === t.project_id)?.name}
                   </small>
                 </td>
-                <td>{t.description}</td>
+                <td>
+                  {t.description}
+                  <small className="correction-label">
+                    {assignmentLabel(
+                      t,
+                      projects.find((p) => p.id === t.project_id)
+                        ?.included_correction_rounds,
+                    )}
+                  </small>
+                  {t.change_request != null && (
+                    <p className="change-request-note">
+                      <strong>Kundenwunsch:</strong> {t.change_request}
+                    </p>
+                  )}
+                  {mutate && (
+                    <CorrectionAssignment
+                      key={
+                        t.id +
+                        String(t.correction_round) +
+                        String(t.change_request)
+                      }
+                      entry={t}
+                      project={projects.find((p) => p.id === t.project_id)}
+                      times={times}
+                      mutate={mutate}
+                      busy={busy}
+                    />
+                  )}
+                </td>
                 <td>
                   {t.kind === "internal" ? "Intern" : "Extern"}
                   <small>
@@ -191,7 +320,11 @@ export function TimeReport({
                       ? "Freigegeben"
                       : t.kind === "internal"
                         ? "Nur intern"
-                        : "Ungeprüft"}
+                        : t.change_request != null
+                          ? "Gesonderte Abrechnung offen"
+                          : t.correction_round != null
+                            ? "Abrechnung offen"
+                            : "Ungeprüft"}
                 </td>
               </tr>
             ))}
@@ -271,6 +404,9 @@ export default function CustomerProfile({
           Kundenportal
         </Link>
       </section>
+      {section === "Zugänge & Infrastruktur" && (
+        <CustomerAccess key={c.id} customerId={c.id} />
+      )}
       {section === "Übersicht" && (
         <>
           <div className="metrics">
@@ -374,6 +510,13 @@ export default function CustomerProfile({
                       .reduce((s, t) => s + reportSeconds(t, [0, now]), 0),
                   )}
                 </p>
+                <CorrectionProjectSettings
+                  key={p.id + String(p.included_correction_rounds)}
+                  project={p}
+                  times={ct}
+                  mutate={mutate}
+                  busy={busy}
+                />
                 <button
                   className="button small outline"
                   onClick={() => track(p.id)}
@@ -387,7 +530,14 @@ export default function CustomerProfile({
         </section>
       )}
       {section === "Zeiten & Auszüge" && (
-        <TimeReport times={ct} projects={cp} customerId={c.id} now={now} />
+        <TimeReport
+          times={ct}
+          projects={cp}
+          customerId={c.id}
+          now={now}
+          mutate={mutate}
+          busy={busy}
+        />
       )}
       {section === "Rechnungen" && (
         <section className="panel">

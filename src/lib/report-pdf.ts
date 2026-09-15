@@ -8,6 +8,11 @@ import {
   endPath,
 } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
+import {
+  assignmentLabel,
+  correctionStatus,
+  type CorrectionProject,
+} from "./correction-rounds";
 import { readFile } from "node:fs/promises";
 import { reportSeconds, timeDuration, type ReportTime } from "./time-report";
 export async function createTimePdf({
@@ -22,7 +27,7 @@ export async function createTimePdf({
   period: string;
   now: number;
   rows: ReportTime[];
-  projects: { id: string; name: string }[];
+  projects: CorrectionProject[];
   window: [number, number];
 }) {
   const doc = await PDFDocument.create();
@@ -116,6 +121,59 @@ export async function createTimePdf({
   block("Interne Arbeitszeit: " + timeDuration(sum("internal")), 12);
   block("Externe Projektzeit: " + timeDuration(sum("external")), 12);
   block("Davon extern freigegeben: " + timeDuration(sum("external", true)), 12);
+  if (rows.some((t) => t.correction_round != null)) {
+    y -= 10;
+    block("Davon Korrekturrunden (bereits in den Gesamtzeiten enthalten):", 10);
+    for (const [status, label] of [
+      ["included", "Im Paket"],
+      ["additional", "Zusatzzeit"],
+      ["open", "Paketumfang offen"],
+    ]) {
+      const total = (kind: string) =>
+        rows
+          .filter(
+            (t) =>
+              t.kind === kind &&
+              correctionStatus(
+                t.correction_round,
+                projects.find((p) => p.id === t.project_id)
+                  ?.included_correction_rounds,
+              ) === status,
+          )
+          .reduce((s, t) => s + reportSeconds(t, window), 0);
+      block(
+        label +
+          ": intern " +
+          timeDuration(total("internal")) +
+          " · extern " +
+          timeDuration(total("external")),
+        10,
+      );
+    }
+    block(
+      "Zusatzzeit ist zur späteren Abrechnungsprüfung vorgemerkt. Die Zuordnung entspricht dem aktuellen Paketumfang.",
+      9,
+    );
+  }
+  if (rows.some((t) => t.change_request != null)) {
+    y -= 10;
+    block("Davon Abänderungen durch Kunden (separat abzurechnen):", 10);
+    const total = (kind: string) =>
+      rows
+        .filter((t) => t.kind === kind && t.change_request != null)
+        .reduce((sum, t) => sum + reportSeconds(t, window), 0);
+    block(
+      "Intern: " +
+        timeDuration(total("internal")) +
+        " · Extern: " +
+        timeDuration(total("external")),
+      10,
+    );
+    block(
+      "Außerhalb des vereinbarten Projektumfangs. Gesonderte Abrechnung noch offen; bereits in den Gesamtzeiten enthalten. Keine enthaltene Korrekturrunde wird verbraucht.",
+      9,
+    );
+  }
   y -= 10;
   block(
     "Interne und externe Zeiten sind getrennte Größen und werden nicht addiert. Laufende Timer sind vorläufig. Dieser Auszug ist keine Rechnung. Monatsgrenzen werden anteilig berücksichtigt.",
@@ -167,6 +225,17 @@ export async function createTimePdf({
               : "Ungeprüft"),
       9,
     );
+    if (t.correction_round != null || t.change_request != null)
+      block(
+        assignmentLabel(
+          t,
+          projects.find((p) => p.id === t.project_id)
+            ?.included_correction_rounds,
+        ),
+        10,
+      );
+    if (t.change_request != null)
+      block("Kundenwunsch / Abweichung: " + t.change_request, 10);
     block(t.description);
     y -= 14;
   }

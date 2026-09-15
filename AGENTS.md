@@ -37,3 +37,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## Kundenzugänge
+
+Kundenzugänge bleiben im separaten, verschlüsselten Bereich (`docs/customer-access.md`). Niemals Passwort-Klartext oder Chiffrate in CRM-/Portal-Snapshots, Logs oder Git aufnehmen. Vor dem nächsten PUSH die Migration und die serverseitige Vercel-Variable `NC_CREDENTIALS_KEY` gemäß Dokumentation bereitstellen. Den bestehenden Schlüssel nicht neu generieren oder blind überschreiben; lokale Quelle ist die ignorierte `.env.local`.
