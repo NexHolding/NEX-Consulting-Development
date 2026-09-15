@@ -1,7 +1,8 @@
 "use client";
+import { withLoading } from "@/lib/loading-state";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import Link from "./app-link";
 import { Brand } from "./brand";
 import { ArrowUpRight, LockKeyhole, ArrowLeft } from "lucide-react";
 export default function Login() {
@@ -42,12 +43,14 @@ export default function Login() {
             setError("");
             const data = Object.fromEntries(new FormData(e.currentTarget));
             try {
-              const r = await fetch("/api/auth", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data),
+              const [r, d] = await withLoading(async () => {
+                const r = await fetch("/api/auth", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(data),
+                });
+                return [r, await r.json()] as const;
               });
-              const d = await r.json();
               if (!r.ok) throw new Error(d.error);
               router.replace(
                 ["/portal", "/crm/portal"].includes(d.redirect)

@@ -1,8 +1,14 @@
 "use client";
+import { withLoading, beginLoading } from "@/lib/loading-state";
 import { useEffect, useState, useCallback, useRef } from "react";
-import Link from "next/link";
+import Link from "./app-link";
 import { Brand } from "./brand";
-import CustomerProfile, { TimeReport } from "./customer-profile";
+import TimerCard from "./timer-card";
+import CustomerFields from "./customer-fields";
+import CustomerProfile, {
+  TimeReport,
+  type CustomerRecord as Customer,
+} from "./customer-profile";
 import { reportSeconds, reportWindow } from "@/lib/time-report";
 import { useRouter } from "next/navigation";
 import {
@@ -18,22 +24,12 @@ import {
   LogOut,
   Plus,
   ArrowUpRight,
-  Play,
-  Square,
   Search,
   X,
   Check,
   RefreshCw,
   Menu,
 } from "lucide-react";
-type Customer = {
-  id: string;
-  name: string;
-  contact: string;
-  email: string;
-  address: string;
-  notes: string;
-};
 type Project = {
   id: string;
   customer_id: string;
@@ -295,6 +291,7 @@ export default function Workspace({ initial }: { initial: unknown }) {
     };
   }, [modal]);
   const refresh = useCallback(async () => {
+    const finishLoading = beginLoading();
     try {
       const r = await fetch("/api/crm", { cache: "no-store" });
       if (r.status === 401) {
@@ -307,6 +304,8 @@ export default function Workspace({ initial }: { initial: unknown }) {
       setError(
         "Verbindung unterbrochen. Die letzte gespeicherte Ansicht bleibt sichtbar.",
       );
+    } finally {
+      finishLoading();
     }
   }, [router]);
   useEffect(() => {
@@ -343,12 +342,14 @@ export default function Workspace({ initial }: { initial: unknown }) {
     setError("");
     setNotice("");
     try {
-      const r = await fetch("/api/crm", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, payload }),
+      const [r, result] = await withLoading(async () => {
+        const r = await fetch("/api/crm", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action, payload }),
+        });
+        return [r, await r.json()] as const;
       });
-      const result = await r.json();
       if (!r.ok) throw new Error(result.error);
       setData((d) => ({ ...d, ...result }));
       setNotice("Gespeichert.");
@@ -368,6 +369,10 @@ export default function Workspace({ initial }: { initial: unknown }) {
     e.preventDefault();
     const f = Object.fromEntries(new FormData(e.currentTarget));
     let payload: Record<string, unknown> = { ...f };
+    if (modal === "customer") {
+      payload.payment_terms_days =
+        f.payment_terms_days === "" ? 14 : Number(f.payment_terms_days ?? 14);
+    }
     if (modal === "project")
       payload = {
         ...payload,
@@ -463,52 +468,36 @@ export default function Workspace({ initial }: { initial: unknown }) {
         {(["internal", "external"] as const).map((kind) => {
           const live = running.find((t) => t.kind === kind);
           return (
-            <article className={"timer " + (live ? "running" : "")} key={kind}>
-              <div>
-                <span className="timer-label">
-                  {kind === "internal"
-                    ? "Interne Arbeitszeit"
-                    : "Externe Projektzeit"}
-                </span>
-                <span className={"badge " + (live ? "green" : "")}>
-                  {live ? "Läuft" : "Bereit"}
-                </span>
-              </div>
-              <strong className="timer-digits">
-                {duration(live ? seconds(live, now) : 0)}
-              </strong>
-              <p>
-                {live
+            <TimerCard
+              key={kind}
+              label={
+                kind === "internal"
+                  ? "Interne Arbeitszeit"
+                  : "Externe Projektzeit"
+              }
+              running={!!live}
+              elapsed={duration(live ? seconds(live, now) : 0)}
+              description={
+                live
                   ? live.description
                   : kind === "internal"
                     ? "Tatsächliche aktive Arbeit. Nur intern sichtbar."
-                    : "Projektzeit einschließlich vereinbarter Begleitzeiten."}
-              </p>
-              <button
-                className={"button " + (live ? "stop" : "outline")}
-                disabled={
-                  busy ||
-                  (!live && (!projectId || description.trim().length < 3))
-                }
-                onClick={() =>
-                  mutate("timer", {
-                    project_id: live?.project_id || projectId,
-                    kind,
-                    action: live ? "stop" : "start",
-                    category: live?.category || category,
-                    description: live?.description || description,
-                  })
-                }
-              >
-                {live ? <Square size={14} /> : <Play size={14} />}{" "}
-                {live ? "Stopp · speichern" : "Start"}
-              </button>
-              {live && seconds(live, now) > 28800 && (
-                <span className="error">
-                  Timer läuft seit über 8 Stunden. Bitte prüfen.
-                </span>
-              )}
-            </article>
+                    : "Projektzeit einschließlich vereinbarter Begleitzeiten."
+              }
+              disabled={
+                busy || (!live && (!projectId || description.trim().length < 3))
+              }
+              overdue={!!live && seconds(live, now) > 28800}
+              onToggle={() =>
+                mutate("timer", {
+                  project_id: live?.project_id || projectId,
+                  kind,
+                  action: live ? "stop" : "start",
+                  category: live?.category || category,
+                  description: live?.description || description,
+                })
+              }
+            />
           );
         })}
       </div>
@@ -584,7 +573,7 @@ export default function Workspace({ initial }: { initial: unknown }) {
             className="icon-button"
             aria-label="Abmelden"
             onClick={async () => {
-              await fetch("/api/auth", { method: "DELETE" });
+              await withLoading(() => fetch("/api/auth", { method: "DELETE" }));
               router.replace("/login");
               router.refresh();
             }}
@@ -1463,7 +1452,9 @@ export default function Workspace({ initial }: { initial: unknown }) {
         >
           <section
             ref={modalRef}
-            className="modal"
+            className={
+              "modal " + (modal === "customer" ? "customer-modal" : "")
+            }
             role="dialog"
             aria-modal="true"
             aria-labelledby="modal-title"
@@ -1491,36 +1482,7 @@ export default function Workspace({ initial }: { initial: unknown }) {
               </button>
             </div>
             <form onSubmit={submit}>
-              {modal === "customer" && (
-                <>
-                  <label>
-                    Unternehmen / Kundenname
-                    <input
-                      name="name"
-                      required
-                      minLength={2}
-                      maxLength={160}
-                      autoFocus
-                    />
-                  </label>
-                  <label>
-                    Ansprechpartner
-                    <input name="contact" maxLength={160} />
-                  </label>
-                  <label>
-                    E-Mail
-                    <input name="email" type="email" />
-                  </label>
-                  <label>
-                    Rechnungsanschrift
-                    <textarea name="address" rows={3} maxLength={1000} />
-                  </label>
-                  <label>
-                    Interne Notizen
-                    <textarea name="notes" maxLength={4000} />
-                  </label>
-                </>
-              )}
+              {modal === "customer" && <CustomerFields />}
               {modal === "project" && (
                 <>
                   <label>

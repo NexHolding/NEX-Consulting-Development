@@ -5,6 +5,8 @@ import "./globals.css";
 import "./reference-design.css";
 import "./brand.css";
 import "./crm-design.css";
+import "./loading-design.css";
+import { GlobalLoading } from "@/components/brand-loading";
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.next-consulting.com"),
   title: {
@@ -37,7 +39,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="de">
-      <body>{children}</body>
+      <body>
+        {children}
+        <GlobalLoading />
+      </body>
     </html>
   );
 }

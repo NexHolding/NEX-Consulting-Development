@@ -1,0 +1,235 @@
+.nex-intro,
+.nex-load-toast {
+  --load-gold: #ae884c;
+  font-family: "NEX UI", Arial, sans-serif;
+  color: #e7ce9d;
+}
+.nex-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: radial-gradient(
+    ellipse at 50% 45%,
+    #30281b 0,
+    #141411 35%,
+    #080c0f 72%
+  );
+  animation: nex-intro-dismiss 300ms ease-in 2700ms forwards;
+}
+.nex-intro::after {
+  content: "";
+  position: absolute;
+  inset: 24px;
+  border: 1px solid #ae884c28;
+  pointer-events: none;
+}
+.nex-intro-orbit {
+  position: absolute;
+  width: min(640px, 130vw);
+  aspect-ratio: 1;
+  border: 1px solid #ae884c29;
+  border-radius: 50%;
+  box-shadow:
+    0 0 100px #ae884c0d,
+    inset 0 0 90px #ae884c08;
+  animation: nex-orbit 14s linear infinite;
+}
+.nex-intro-orbit::before,
+.nex-intro-orbit::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+}
+.nex-intro-orbit::before {
+  inset: 30px;
+  border: 1px solid transparent;
+  border-top-color: #dabb7866;
+  border-bottom-color: #ae884c28;
+  transform: rotate(-35deg);
+}
+.nex-intro-orbit::after {
+  width: 6px;
+  height: 6px;
+  background: #f4d99c;
+  top: 50%;
+  left: -3px;
+  box-shadow:
+    0 0 16px #f4d99c,
+    0 0 42px #ae884c;
+}
+.nex-intro-content {
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  width: min(480px, calc(100vw - 80px));
+  animation: nex-load-reveal 650ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.nex-load-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  color: #c4ad83;
+  margin-bottom: 46px;
+  text-align: center;
+}
+.nex-intro-logo {
+  width: 100%;
+}
+.nex-intro-slogan {
+  margin: 30px 0 40px;
+  font-size: clamp(10px, 2.5vw, 12px);
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  text-align: center;
+  color: #ebd7b0;
+}
+.nex-load-track {
+  position: relative;
+  width: 100%;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: #ae884c26;
+}
+.nex-load-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ae884c, #edcf90, #fff0bf);
+  box-shadow: 0 0 16px #d6af63;
+  transform-origin: left;
+}
+.nex-intro .nex-load-track {
+  width: min(300px, 85%);
+}
+.nex-intro .nex-load-track > span {
+  animation: nex-intro-progress 2700ms cubic-bezier(0.25, 0.6, 0.35, 1) both;
+}
+.nex-load-caption {
+  font-size: 11px;
+  color: #bdaf95;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+}
+.nex-intro .nex-load-caption {
+  margin-top: 18px;
+}
+.nex-load-toast {
+  position: fixed;
+  z-index: 900;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  left: 50%;
+  width: min(340px, calc(100vw - 32px));
+  padding: 22px 24px 18px;
+  border: 1px solid #ae884c77;
+  border-radius: 14px;
+  background: linear-gradient(125deg, #232019f5, #0b1218fa);
+  box-shadow:
+    0 15px 55px #0008,
+    0 0 28px #ae884c13;
+  backdrop-filter: blur(16px);
+  pointer-events: none;
+  transform: translateX(-50%);
+  animation: nex-toast-enter 220ms ease-out;
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+}
+.nex-load-toast .nex-logo {
+  width: 200px;
+  max-width: 100%;
+}
+.nex-load-toast .nex-load-track > span {
+  width: 45%;
+  animation: nex-load-scan 1.4s ease-in-out infinite;
+}
+.nex-route-loading {
+  display: block;
+  min-height: 30vh;
+}
+@keyframes nex-intro-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes nex-intro-dismiss {
+  to {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+@keyframes nex-load-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes nex-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes nex-load-scan {
+  0% {
+    transform: translateX(-110%);
+  }
+  100% {
+    transform: translateX(325%);
+  }
+}
+@keyframes nex-toast-enter {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+@media (max-width: 560px) {
+  .nex-intro::after {
+    inset: 14px;
+  }
+  .nex-load-eyebrow {
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    margin-bottom: 34px;
+  }
+  .nex-intro-slogan {
+    line-height: 1.8;
+    letter-spacing: 0.14em;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nex-intro-content,
+  .nex-intro-orbit,
+  .nex-load-toast,
+  .nex-load-track > span {
+    animation: none !important;
+  }
+  .nex-intro {
+    animation-duration: 1ms;
+    animation-delay: 2999ms;
+  }
+  .nex-load-toast .nex-load-track > span {
+    width: 100%;
+    opacity: 0.65;
+  }
+}
+@media print {
+  .nex-intro,
+  .nex-load-toast {
+    display: none !important;
+  }
+}

@@ -1,4 +1,5 @@
 "use client";
+import { withLoading } from "@/lib/loading-state";
 import { useState, type ReactNode } from "react";
 import { Brand } from "./brand";
 import { useRouter } from "next/navigation";
@@ -134,7 +135,9 @@ export function Shell({
         <button
           className="text-link"
           onClick={async () => {
-            const r = await fetch("/api/auth", { method: "DELETE" });
+            const r = await withLoading(() =>
+              fetch("/api/auth", { method: "DELETE" }),
+            );
             if (r.ok) {
               router.replace("/login");
               router.refresh();

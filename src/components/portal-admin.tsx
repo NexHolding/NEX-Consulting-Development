@@ -1,6 +1,7 @@
 "use client";
+import { withLoading, beginLoading } from "@/lib/loading-state";
 import { useState } from "react";
-import Link from "next/link";
+import Link from "./app-link";
 import { Shell, Editor, Blank, type Field } from "./portal-shared";
 import {
   display as s,
@@ -32,12 +33,14 @@ export default function PortalAdmin({
     payload: Record<string, unknown>,
     id?: string,
   ) {
-    const r = await fetch("/api/portal-admin", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action, payload, id }),
+    const [r, d] = await withLoading(async () => {
+      const r = await fetch("/api/portal-admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, payload, id }),
+      });
+      return [r, await r.json()] as const;
     });
-    const d = await r.json();
     if (!r.ok) throw Error(d.error);
     setData(d);
   }
@@ -230,12 +233,15 @@ export default function PortalAdmin({
                       const body = new FormData(form);
                       body.set("customer_id", customerId);
                       setError("");
+                      const finishLoading = beginLoading();
                       try {
-                        const r = await fetch("/api/portal-documents", {
-                          method: "POST",
-                          body,
+                        const [r, d] = await withLoading(async () => {
+                          const r = await fetch("/api/portal-documents", {
+                            method: "POST",
+                            body,
+                          });
+                          return [r, await r.json()] as const;
                         });
-                        const d = await r.json();
                         if (!r.ok) throw Error(d.error);
                         const state = await fetch("/api/portal-admin");
                         if (!state.ok)
@@ -248,6 +254,8 @@ export default function PortalAdmin({
                             ? e.message
                             : "Upload fehlgeschlagen",
                         );
+                      } finally {
+                        finishLoading();
                       }
                     }}
                   >

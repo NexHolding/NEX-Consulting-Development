@@ -1,11 +1,18 @@
 import Image from "next/image";
-import Link from "next/link";
+import Link from "./app-link";
 
 /** Original artwork, with transparent canvas margins removed only in the layout. */
-export function BrandLogo({ className = "" }: { className?: string }) {
+export function BrandLogo({
+  className = "",
+  eager = false,
+}: {
+  className?: string;
+  eager?: boolean;
+}) {
   return (
     <span className={`nex-logo ${className}`}>
       <Image
+        loading={eager ? "eager" : "lazy"}
         src="/brand/nex-consulting-logo.png"
         alt="NEX Consulting"
         width={3125}

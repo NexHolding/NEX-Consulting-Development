@@ -426,6 +426,244 @@
   min-height: 42px;
   font-size: 13px;
 }
+.workspace .timer-control {
+  position: relative;
+  isolation: isolate;
+  border-color: #ae884c52;
+  background: linear-gradient(145deg, #ae884c0d, transparent 70%), #09121a;
+  transition:
+    border-color 320ms ease,
+    background-color 320ms ease;
+}
+.workspace .timer-control::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border: 1px solid #e0ba72;
+  border-radius: inherit;
+  box-shadow:
+    0 0 28px #ae884c1a,
+    inset 0 0 32px #ae884c0a;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 400ms ease;
+}
+.workspace .timer-control.running::before {
+  opacity: 0.65;
+}
+.workspace .timer-control.running {
+  background: linear-gradient(145deg, #ae884c1a, transparent 75%), #0c151b;
+}
+.workspace .timer-control .timer-topline {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.workspace .timer-control .timer-label {
+  color: #e6dfd1;
+  font-weight: 600;
+}
+.workspace .timer-control .timer-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 10px;
+  border: 1px solid #ae884c59;
+  border-radius: 7px;
+  background: #ae884c14;
+  color: #efd6a1;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.workspace .timer-state-mark {
+  width: 14px;
+  height: 14px;
+  display: inline-grid;
+  place-items: center;
+}
+.workspace .timer-state-dot {
+  position: relative;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #dbb975;
+}
+.workspace .timer-state-dot::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px solid #e8c786;
+  opacity: 0;
+}
+.workspace .timer-control[data-state="running"] .timer-state-dot::after {
+  animation: timer-gold-pulse 2.4s ease-out infinite;
+}
+.workspace .timer-control .timer-digits {
+  color: #efdfbc;
+  font-weight: 550;
+  transition:
+    color 300ms ease,
+    text-shadow 300ms ease;
+}
+.workspace .timer-control.running .timer-digits {
+  color: #f5d58e;
+  text-shadow: 0 0 24px #dbb97520;
+}
+.workspace .timer-control p {
+  color: #b9c2c9;
+}
+.workspace .timer-control .button.timer-action {
+  position: relative;
+  display: flex;
+  width: 100%;
+  justify-content: flex-start;
+  gap: 14px;
+  min-height: 70px;
+  padding: 13px 16px;
+  overflow: hidden;
+  text-align: left;
+  border: 1px solid #e5c58a;
+  border-radius: 10px;
+  background: linear-gradient(115deg, #f1d6a0, #c6a05e);
+  color: #1c1911;
+  box-shadow: 0 4px 18px #ae884c16;
+  transition:
+    transform 180ms ease,
+    box-shadow 240ms ease,
+    border-color 240ms ease;
+}
+.workspace .timer-control .timer-action.timer-action-stop {
+  background: linear-gradient(115deg, #ae884c35, #ae884c14);
+  border-color: #d3ab62;
+  color: #f5dba4;
+}
+.workspace .timer-action::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 20%,
+    #fff5 50%,
+    transparent 80%
+  );
+  transform: translateX(-130%);
+  pointer-events: none;
+}
+.workspace .timer-control .timer-action:hover:not(:disabled) {
+  filter: none;
+  transform: translateY(-2px);
+  box-shadow: 0 7px 24px #ae884c2b;
+}
+.workspace .timer-action:hover:not(:disabled)::after {
+  animation: timer-gold-sweep 650ms ease-out;
+}
+.workspace .timer-control .timer-action:active:not(:disabled) {
+  transform: translateY(0) scale(0.985);
+}
+.workspace .timer-control .timer-action:focus-visible {
+  outline: 2px solid #f5dba4;
+  outline-offset: 4px;
+}
+.workspace .timer-control .timer-action:disabled {
+  opacity: 1;
+  cursor: not-allowed;
+  background: #ae884c18;
+  border-color: #ae884c45;
+  color: #cdbb9a;
+  box-shadow: none;
+}
+.workspace .timer-control .timer-action[aria-busy="true"] {
+  cursor: progress;
+  border-color: #d3ab62;
+  color: #f5dba4;
+}
+.workspace .timer-action-icon {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 38px;
+  height: 38px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  animation: timer-icon-enter 260ms ease-out;
+}
+.workspace .timer-action-icon.is-pending {
+  animation: timer-icon-spin 1.2s linear infinite;
+}
+.workspace .timer-action-copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  line-height: 1.35;
+}
+.workspace .timer-action-copy > span {
+  font-size: 15px;
+  font-weight: 650;
+}
+.workspace .timer-action-copy > small {
+  font-size: 11px;
+  font-weight: 450;
+  color: inherit;
+}
+.workspace .timer-control[data-state="saved"]::before {
+  animation: timer-saved-glow 850ms ease-out;
+}
+.workspace .timer-control[data-state="saved"] .timer-state-mark {
+  animation: timer-icon-enter 280ms ease-out;
+}
+@keyframes timer-gold-pulse {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.65;
+  }
+  75%,
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+@keyframes timer-gold-sweep {
+  to {
+    transform: translateX(130%);
+  }
+}
+@keyframes timer-icon-enter {
+  from {
+    transform: scale(0.82);
+    opacity: 0.4;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes timer-icon-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes timer-saved-glow {
+  0%,
+  35% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .workspace .timer-control *,
+  .workspace .timer-control::before,
+  .workspace .timer-control *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .workspace .timer-control .timer-action:hover:not(:disabled),
+  .workspace .timer-control .timer-action:active:not(:disabled) {
+    transform: none;
+  }
+}
 .workspace :is(.footnote, .timer-panel > .footnote) {
   font-size: 12px;
   line-height: 1.7;
@@ -604,6 +842,83 @@
 }
 .workspace .profile-form > button {
   justify-self: start;
+}
+.workspace .customer-modal {
+  width: min(900px, 100%);
+  max-width: 900px;
+}
+.workspace .customer-fields {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+.workspace .customer-fields label {
+  margin: 0;
+  font-size: 12px;
+}
+.workspace
+  .customer-fields
+  :is(.customer-form-hint, .customer-field-group > p) {
+  font-size: 12px;
+  line-height: 1.65;
+  margin: 0;
+  color: #aebbc4;
+}
+.workspace .customer-field-group {
+  border: 1px solid var(--crm-line);
+  border-radius: 12px;
+  padding: 0 20px;
+  min-width: 0;
+  background: #ffffff02;
+}
+.workspace .customer-field-group summary {
+  cursor: pointer;
+  padding: 18px 0;
+  color: #eed5a4;
+  font-size: 14px;
+  font-weight: 600;
+}
+.workspace .customer-field-group summary small {
+  float: right;
+  font-size: 10px;
+  font-weight: 400;
+  color: #9daab4;
+  padding-top: 3px;
+}
+.workspace .customer-field-group[open] {
+  padding-bottom: 20px;
+}
+.workspace .customer-field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 16px;
+  margin-top: 16px;
+}
+.workspace .customer-field-grid .wide {
+  grid-column: 1 / -1;
+}
+.workspace .customer-legacy-address {
+  margin-top: 20px !important;
+}
+.workspace .customer-fields small {
+  line-height: 1.5;
+}
+@container crm-main (max-width: 640px) {
+  .workspace .profile-form .customer-field-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 560px) {
+  .workspace .customer-field-grid {
+    grid-template-columns: 1fr;
+  }
+  .workspace .customer-field-group {
+    padding-inline: 14px;
+  }
+  .workspace .customer-field-group summary small {
+    display: none;
+  }
 }
 .workspace .panel > h2 + p {
   margin-top: 12px;

@@ -1,5 +1,6 @@
 "use client";
-import Link from "next/link";
+import { withLoading } from "@/lib/loading-state";
+import Link from "./app-link";
 import { Brand } from "./brand";
 import Image from "next/image";
 import { useState } from "react";
@@ -63,12 +64,14 @@ export default function Landing() {
     const form = event.currentTarget;
     const data = Object.fromEntries(new FormData(form));
     try {
-      const r = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+      const [r, d] = await withLoading(async () => {
+        const r = await fetch("/api/contact", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        return [r, await r.json()] as const;
       });
-      const d = await r.json();
       if (!r.ok) throw new Error(d.error);
       setSuccess(true);
       setNotice(

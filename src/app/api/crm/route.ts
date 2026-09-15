@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { admin, db, sameOrigin, snapshot } from "@/lib/server";
+import {
+  customerCreateSchema,
+  customerUpdateSchema,
+} from "@/lib/customer-schema";
+import { customerAddressPatch } from "@/lib/customer-fields";
 const uuid = z.string().uuid();
 const text = z.string().trim().min(2).max(200);
 const cents = z.number().int().min(0).max(1000000000);
@@ -44,27 +49,16 @@ export async function POST(request: Request) {
     let result;
     switch (action) {
       case "customer_update": {
-        const p = z
-          .object({
-            id: uuid,
-            name: text.max(160),
-            contact: z.string().max(160),
-            email: z.union([z.email(), z.literal("")]),
-            address: z.string().max(1000),
-            notes: z.string().max(4000),
-            phone: z.string().max(80),
-            billing_name: z.string().max(200),
-            billing_email: z.union([z.email(), z.literal("")]),
-            billing_address: z.string().max(1000),
-            vat_id: z.string().max(80),
-            payment_terms_days: z.number().int().min(0).max(365),
-            source: z.string().max(160),
-          })
-          .parse(payload);
-        const { id, ...fields } = p;
+        const { id, ...fields } = customerUpdateSchema.parse(payload);
+        const existing = await client
+          .from("nc_customers")
+          .select("*")
+          .eq("id", id)
+          .single();
+        if (existing.error) throw existing.error;
         result = await client
           .from("nc_customers")
-          .update(fields)
+          .update(customerAddressPatch(fields, existing.data))
           .eq("id", id)
           .select("id")
           .single();
@@ -93,16 +87,10 @@ export async function POST(request: Request) {
         break;
       }
       case "customer": {
-        const p = z
-          .object({
-            name: text,
-            contact: z.string().max(160),
-            email: z.union([z.email(), z.literal("")]),
-            address: z.string().max(1000),
-            notes: z.string().max(4000),
-          })
-          .parse(payload);
-        result = await client.from("nc_customers").insert(p);
+        const p = customerCreateSchema.parse(payload);
+        result = await client
+          .from("nc_customers")
+          .insert(customerAddressPatch(p));
         break;
       }
       case "project": {
@@ -282,7 +270,7 @@ export async function POST(request: Request) {
         error: unauthorized
           ? "Bitte anmelden."
           : e instanceof z.ZodError
-            ? "Bitte alle Pflichtfelder korrekt ausfüllen."
+            ? "Bitte die eingegebenen Daten prüfen: Pflichtangaben, E-Mail-Adressen und Feldlängen."
             : e instanceof Error && e.message.startsWith("Betreuungsbeginn")
               ? e.message
               : "Die Aktion konnte nicht gespeichert werden.",

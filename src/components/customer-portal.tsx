@@ -1,4 +1,5 @@
 "use client";
+import { withLoading } from "@/lib/loading-state";
 import { useState } from "react";
 import { Shell, Editor, Blank } from "./portal-shared";
 import {
@@ -23,12 +24,14 @@ export default function CustomerPortal({ initial }: { initial: PortalData }) {
   const [orderId, setOrderId] = useState("");
   const [ticketId, setTicketId] = useState("");
   async function save(action: string, payload: Record<string, unknown>) {
-    const r = await fetch("/api/portal", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action, payload }),
+    const [r, d] = await withLoading(async () => {
+      const r = await fetch("/api/portal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, payload }),
+      });
+      return [r, await r.json()] as const;
     });
-    const d = await r.json();
     if (!r.ok) throw Error(d.error);
     setData(d);
   }

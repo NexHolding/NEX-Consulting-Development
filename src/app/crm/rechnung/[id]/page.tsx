@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { currentUser, db } from "@/lib/server";
-import Link from "next/link";
+import Link from "@/components/app-link";
 import { BrandLogo } from "@/components/brand";
 export default async function InvoicePage({
   params,
@@ -37,13 +37,20 @@ export default async function InvoicePage({
         und Steuerangaben werden vor Ausstellung geprüft.
       </div>
       <section>
-        <h2>{c?.billing_name || c?.name}</h2>
+        <h2>{c?.billing_name || c?.legal_name || c?.name}</h2>
         <p className="preline">
           {c?.billing_address ||
             c?.address ||
             "Rechnungsanschrift noch ergänzen"}
         </p>
       </section>
+      {c?.vat_id && <p>USt-IdNr. / UID des Kunden: {c.vat_id}</p>}
+      {c?.buyer_reference && (
+        <p>Bestellreferenz / Kostenstelle: {c.buyer_reference}</p>
+      )}
+      {c?.e_invoice_address && (
+        <p>E-Rechnungsadresse / Leitweg-ID: {c.e_invoice_address}</p>
+      )}
       <p>Erstellt am {new Date(i.created_at).toLocaleDateString("de-DE")}</p>
       <h2>{i.subject}</h2>
       {i.period && <p>Leistungsmonat: {i.period}</p>}

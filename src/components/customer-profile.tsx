@@ -1,6 +1,7 @@
 "use client";
-import Link from "next/link";
+import Link from "./app-link";
 import { useState } from "react";
+import CustomerFields from "./customer-fields";
 import {
   reportSeconds,
   reportWindow,
@@ -8,6 +9,7 @@ import {
   type ReportTime,
 } from "@/lib/time-report";
 export type CustomerRecord = {
+  [field: string]: string | number | undefined;
   id: string;
   name: string;
   contact: string;
@@ -239,17 +241,14 @@ export default function CustomerProfile({
     const f = Object.fromEntries(new FormData(e.currentTarget));
     setSaved(
       await mutate("customer_update", {
-        ...c,
+        id: c.id,
         ...f,
-        payment_terms_days: Number(
-          f.payment_terms_days ?? c.payment_terms_days ?? 14,
-        ),
-        phone: f.phone ?? c.phone ?? "",
-        billing_name: f.billing_name ?? c.billing_name ?? "",
-        billing_email: f.billing_email ?? c.billing_email ?? "",
-        billing_address: f.billing_address ?? c.billing_address ?? "",
-        vat_id: f.vat_id ?? c.vat_id ?? "",
-        source: f.source ?? c.source ?? "NEX Consulting",
+        ...(f.payment_terms_days !== undefined
+          ? {
+              payment_terms_days:
+                f.payment_terms_days === "" ? 14 : Number(f.payment_terms_days),
+            }
+          : {}),
       }),
     );
   }
@@ -310,6 +309,12 @@ export default function CustomerProfile({
           </div>
           <section className="panel">
             <h2>Kontaktdaten & Anschrift</h2>
+            {c.legal_name && (
+              <p>
+                {c.legal_name}
+                {c.legal_form ? ` · ${c.legal_form}` : ""}
+              </p>
+            )}
             <p>
               {c.email || "Keine E-Mail"} · {c.phone || "Keine Telefonnummer"}
             </p>
@@ -329,82 +334,10 @@ export default function CustomerProfile({
             onChange={() => setSaved(false)}
             className="profile-form"
           >
-            {(section === "Stammdaten"
-              ? [
-                  ["name", "Kundenname"],
-                  ["contact", "Ansprechpartner"],
-                  ["email", "E-Mail"],
-                  ["phone", "Telefon"],
-                  ["source", "Herkunft / Webseite"],
-                ]
-              : [
-                  ["billing_name", "Rechnungsempfänger"],
-                  ["billing_email", "Rechnungs-E-Mail"],
-                  ["vat_id", "USt-IdNr."],
-                ]
-            ).map(([name, label]) => (
-              <label key={name}>
-                {label}
-                <input
-                  name={name}
-                  type={name.includes("email") ? "email" : "text"}
-                  defaultValue={String(c[name as keyof CustomerRecord] ?? "")}
-                  required={name === "name"}
-                  maxLength={
-                    name === "phone" || name === "vat_id"
-                      ? 80
-                      : name === "name" ||
-                          name === "contact" ||
-                          name === "source"
-                        ? 160
-                        : 200
-                  }
-                  minLength={name === "name" ? 2 : undefined}
-                />
-              </label>
-            ))}
-            <label>
-              {section === "Stammdaten"
-                ? "Anschrift"
-                : "Abweichende Rechnungsanschrift"}
-              <textarea
-                name={section === "Stammdaten" ? "address" : "billing_address"}
-                rows={4}
-                maxLength={1000}
-                defaultValue={
-                  section === "Stammdaten" ? c.address : c.billing_address || ""
-                }
-              />
-            </label>
-            {section === "Stammdaten" ? (
-              <label>
-                Interne Notizen
-                <textarea
-                  name="notes"
-                  rows={4}
-                  maxLength={4000}
-                  defaultValue={c.notes}
-                />
-              </label>
-            ) : (
-              <>
-                <label>
-                  Zahlungsziel in Tagen
-                  <input
-                    name="payment_terms_days"
-                    type="number"
-                    min={0}
-                    max={365}
-                    defaultValue={c.payment_terms_days ?? 14}
-                    required
-                  />
-                </label>
-                <p className="footnote">
-                  Leere Rechnungsfelder verwenden die Stammdaten. Die Angaben
-                  bereiten die Rechnungserstellung vor.
-                </p>
-              </>
-            )}
+            <CustomerFields
+              values={c}
+              mode={section === "Stammdaten" ? "master" : "billing"}
+            />
             <button className="button" disabled={busy}>
               {busy ? "Wird gespeichert …" : "Änderungen speichern"}
             </button>
