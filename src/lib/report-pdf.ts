@@ -14,7 +14,12 @@ import {
   type CorrectionProject,
 } from "./correction-rounds";
 import { readFile } from "node:fs/promises";
-import { reportSeconds, timeDuration, type ReportTime } from "./time-report";
+import {
+  extraAmount,
+  reportSeconds,
+  timeDuration,
+  type ReportTime,
+} from "./time-report";
 export async function createTimePdf({
   title,
   period,
@@ -155,9 +160,33 @@ export async function createTimePdf({
       9,
     );
   }
+  block(
+    "Zusätzlicher Aufwand / freigegebene Einzelzeiten: " +
+      new Intl.NumberFormat("de-DE", {
+        style: "currency",
+        currency: "EUR",
+      }).format(
+        rows.reduce(
+          (sum, t) =>
+            sum +
+            extraAmount(
+              t,
+              projects.find((p) => p.id === t.project_id),
+              window,
+            ),
+          0,
+        ) / 100,
+      ) +
+      " netto",
+    11,
+  );
+  block(
+    "Abgeschlossene externe Zeiten, zum vereinbarten Satz. Enthaltene Leistungen ohne Zusatzbetrag. Ungeprüfte Beträge sind vorläufig. Keine Rechnung.",
+    9,
+  );
   if (rows.some((t) => t.change_request != null)) {
     y -= 10;
-    block("Davon Abänderungen durch Kunden (separat abzurechnen):", 10);
+    block("Davon Abänderungen durch Kunden:", 10);
     const total = (kind: string) =>
       rows
         .filter((t) => t.kind === kind && t.change_request != null)
@@ -170,7 +199,7 @@ export async function createTimePdf({
       10,
     );
     block(
-      "Außerhalb des vereinbarten Projektumfangs. Gesonderte Abrechnung noch offen; bereits in den Gesamtzeiten enthalten. Keine enthaltene Korrekturrunde wird verbraucht.",
+      "Nach vereinbartem Änderungskontingent. Gesonderte Abrechnung noch offen; bereits in den Gesamtzeiten enthalten. Keine enthaltene Korrekturrunde wird verbraucht.",
       9,
     );
   }
@@ -225,15 +254,42 @@ export async function createTimePdf({
               : "Ungeprüft"),
       9,
     );
-    if (t.correction_round != null || t.change_request != null)
+    if (
+      t.correction_round != null ||
+      t.change_request != null ||
+      t.extra_work != null
+    )
       block(
         assignmentLabel(
           t,
           projects.find((p) => p.id === t.project_id)
             ?.included_correction_rounds,
+          projects.find((p) => p.id === t.project_id)?.included_change_rounds,
         ),
         10,
       );
+    const amount = extraAmount(
+      t,
+      projects.find((p) => p.id === t.project_id),
+      window,
+    );
+    if (amount > 0) {
+      const rate = t.approved_at
+        ? (t.approved_rate_cents ??
+          projects.find((p) => p.id === t.project_id)?.hourly_rate_cents ??
+          0)
+        : (projects.find((p) => p.id === t.project_id)?.hourly_rate_cents ?? 0);
+      const money = (n: number) =>
+        new Intl.NumberFormat("de-DE", {
+          style: "currency",
+          currency: "EUR",
+        }).format(n / 100);
+      block(
+        `Zusatzbetrag / Einzelzeit: ${money(amount)} netto bei ${money(rate)}/h${t.approved_at ? " · freigegeben" : " · vorläufig"}`,
+        10,
+      );
+    }
+    if (t.extra_work != null) block("Zusatzumfang: " + t.extra_work, 10);
     if (t.change_request != null)
       block("Kundenwunsch / Abweichung: " + t.change_request, 10);
     block(t.description);

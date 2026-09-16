@@ -1,3 +1,7 @@
+import {
+  assignmentStatus,
+  type CorrectionProject,
+} from "./correction-rounds.ts";
 export type ReportTime = {
   id: string;
   project_id: string;
@@ -9,6 +13,9 @@ export type ReportTime = {
   approved_at: string | null;
   correction_round?: number | null;
   change_request?: string | null;
+  change_round?: number | null;
+  extra_work?: string | null;
+  approved_rate_cents?: number | null;
 };
 // Berlin calendar boundaries, including changes between summer and winter time.
 export function berlinMidnight(day: string) {
@@ -47,4 +54,25 @@ export function timeDuration(s: number) {
   return [Math.floor(s / 3600), Math.floor((s % 3600) / 60), Math.floor(s % 60)]
     .map((v) => String(v).padStart(2, "0"))
     .join(":");
+}
+
+export function extraAmount(
+  entry: ReportTime,
+  project: CorrectionProject | undefined,
+  window: [number, number],
+) {
+  if (
+    entry.kind !== "external" ||
+    !entry.stopped_at ||
+    entry.category === "break" ||
+    (["waiting", "processing"].includes(entry.category) &&
+      !project?.waiting_billable)
+  )
+    return 0;
+  if (!entry.approved_at && assignmentStatus(entry, project) !== "additional")
+    return 0;
+  const rate = entry.approved_at
+    ? (entry.approved_rate_cents ?? project?.hourly_rate_cents ?? 0)
+    : (project?.hourly_rate_cents ?? 0);
+  return Math.round((reportSeconds(entry, window) * rate) / 3600);
 }

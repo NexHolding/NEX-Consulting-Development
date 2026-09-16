@@ -1,0 +1,547 @@
+{
+  "version": 1,
+  "points": [
+    {
+      "budget": 1000,
+      "monthly": 49
+    },
+    {
+      "budget": 3000,
+      "monthly": 99
+    },
+    {
+      "budget": 5000,
+      "monthly": 149
+    },
+    {
+      "budget": 10000,
+      "monthly": 299
+    },
+    {
+      "budget": 20000,
+      "monthly": 599
+    },
+    {
+      "budget": 35000,
+      "monthly": 1199
+    },
+    {
+      "budget": 50000,
+      "monthly": 1999
+    },
+    {
+      "budget": 75000,
+      "monthly": 3499
+    },
+    {
+      "budget": 100000,
+      "monthly": 5000
+    }
+  ],
+  "services": [
+    {
+      "id": "pages",
+      "group": "Website & Inhalte",
+      "label": "Inhaltsseiten",
+      "unit": "Seiten",
+      "quantities": [
+        1,
+        3,
+        5,
+        8,
+        15,
+        25,
+        40,
+        60,
+        80
+      ],
+      "description": "Individuell gestaltete Inhaltsseiten; Impressum und Datenschutz zählen zusätzlich."
+    },
+    {
+      "id": "templates",
+      "group": "Website & Inhalte",
+      "label": "Individuelle Seitentypen",
+      "unit": "Layouts",
+      "quantities": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        8,
+        12,
+        16,
+        20
+      ],
+      "description": "Wiederverwendbare Layouts für unterschiedliche Inhalte."
+    },
+    {
+      "id": "forms",
+      "group": "Website & Inhalte",
+      "label": "Formulare & Intake-Strecken",
+      "unit": "Strecken",
+      "quantities": [
+        1,
+        1,
+        2,
+        3,
+        5,
+        8,
+        12,
+        16,
+        20
+      ],
+      "description": "Je Strecke ein abgestimmter Ablauf mit Eingaben und Bestätigung."
+    },
+    {
+      "id": "languages",
+      "group": "Website & Inhalte",
+      "label": "Sprachversionen",
+      "unit": "Sprachen",
+      "quantities": [
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        3,
+        4,
+        5
+      ],
+      "description": "Technische Einrichtung; Übersetzungen werden vom Kunden geliefert."
+    },
+    {
+      "id": "imprint",
+      "group": "Website & Inhalte",
+      "label": "Impressum anlegen",
+      "unit": "Einrichtung",
+      "quantities": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "description": "Erstellung und Einbindung auf Basis der vom Kunden bereitgestellten Betreiberangaben."
+    },
+    {
+      "id": "privacy",
+      "group": "Website & Inhalte",
+      "label": "Individuelle Datenschutzerklärung",
+      "unit": "Einrichtung",
+      "quantities": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "description": "Aufnahme der eingesetzten Website-Dienste, Erstellung und Einbindung; Rechtsprüfung und Anbietergebühren separat."
+    },
+    {
+      "id": "seo",
+      "group": "Website & Inhalte",
+      "label": "SEO-Grundeinrichtung",
+      "unit": "Einrichtung",
+      "quantities": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "description": "Seitentitel, Beschreibungen, Indexierung und technische Grundlagen."
+    },
+    {
+      "id": "analytics",
+      "group": "Website & Inhalte",
+      "label": "Analyse- & Consent-Anbindungen",
+      "unit": "Anbindungen",
+      "quantities": [
+        0,
+        1,
+        1,
+        2,
+        3,
+        4,
+        4,
+        6,
+        8
+      ],
+      "description": "Einrichtung der vereinbarten Dienste und Einwilligungsabläufe."
+    },
+    {
+      "id": "modules",
+      "group": "Backend & Portale",
+      "label": "CRM- & Backend-Module",
+      "unit": "Module",
+      "quantities": [
+        0,
+        0,
+        1,
+        3,
+        5,
+        8,
+        12,
+        18,
+        25
+      ],
+      "description": "Ein Modul umfasst eine abgegrenzte Funktion mit Datenansicht und Bearbeitung."
+    },
+    {
+      "id": "customer_portals",
+      "group": "Backend & Portale",
+      "label": "Kundenportale",
+      "unit": "Portale",
+      "quantities": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "description": "Eigenständige Portalbereiche mit Anmeldung."
+    },
+    {
+      "id": "staff_portals",
+      "group": "Backend & Portale",
+      "label": "Mitarbeiterbereiche",
+      "unit": "Bereiche",
+      "quantities": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "description": "Interne Bereiche für Teamarbeit und Aufgaben."
+    },
+    {
+      "id": "finance_portals",
+      "group": "Backend & Portale",
+      "label": "Finance-Portale",
+      "unit": "Portale",
+      "quantities": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        2,
+        3,
+        4
+      ],
+      "description": "Übersichten für Leistungen, Belege und Freigaben; Buchhaltungsschnittstellen separat gezählt."
+    },
+    {
+      "id": "roles",
+      "group": "Backend & Portale",
+      "label": "Berechtigungsrollen",
+      "unit": "Rollen",
+      "quantities": [
+        1,
+        1,
+        2,
+        3,
+        5,
+        8,
+        12,
+        16,
+        20
+      ],
+      "description": "Abgestimmte Rollen mit definierten Zugriffsrechten."
+    },
+    {
+      "id": "staff_users",
+      "group": "Backend & Portale",
+      "label": "Eingerichtete Mitarbeiterzugänge",
+      "unit": "Nutzer",
+      "quantities": [
+        1,
+        1,
+        2,
+        5,
+        10,
+        20,
+        35,
+        60,
+        100
+      ],
+      "description": "Einrichtung und Einweisung; externe Lizenzkosten nicht enthalten."
+    },
+    {
+      "id": "customer_users",
+      "group": "Backend & Portale",
+      "label": "Vorgesehene aktive Kundenzugänge",
+      "unit": "Nutzer",
+      "quantities": [
+        0,
+        0,
+        0,
+        50,
+        150,
+        500,
+        1500,
+        3500,
+        10000
+      ],
+      "description": "Planungsgröße für die Auslegung; Hosting- und Verbrauchskosten separat."
+    },
+    {
+      "id": "workflows",
+      "group": "Automatisierung & KI",
+      "label": "Automatisierte Abläufe",
+      "unit": "Workflows",
+      "quantities": [
+        0,
+        1,
+        2,
+        4,
+        8,
+        12,
+        20,
+        30,
+        40
+      ],
+      "description": "Je Ablauf ein definierter Auslöser mit abgestimmten Folgeschritten."
+    },
+    {
+      "id": "integrations",
+      "group": "Automatisierung & KI",
+      "label": "Externe Schnittstellen",
+      "unit": "Anbindungen",
+      "quantities": [
+        0,
+        1,
+        1,
+        2,
+        4,
+        6,
+        10,
+        15,
+        20
+      ],
+      "description": "Anbindung einer dokumentierten API; Fremdanbieter-Lizenzen separat."
+    },
+    {
+      "id": "agents",
+      "group": "Automatisierung & KI",
+      "label": "KI-Agenten / Assistenten",
+      "unit": "Agenten",
+      "quantities": [
+        0,
+        0,
+        0,
+        1,
+        2,
+        3,
+        5,
+        8,
+        12
+      ],
+      "description": "Je Agent ein abgegrenzter Aufgabenbereich; Modellverbrauch separat."
+    },
+    {
+      "id": "documents",
+      "group": "Automatisierung & KI",
+      "label": "PDF- & Dokumentvorlagen",
+      "unit": "Vorlagen",
+      "quantities": [
+        0,
+        0,
+        1,
+        2,
+        4,
+        6,
+        10,
+        15,
+        20
+      ],
+      "description": "Individuelle Ausgabevorlagen für vereinbarte Daten."
+    },
+    {
+      "id": "migration",
+      "group": "Zusammenarbeit & Qualität",
+      "label": "Datenimport-Quellen",
+      "unit": "Quellen",
+      "quantities": [
+        0,
+        0,
+        0,
+        1,
+        2,
+        3,
+        5,
+        8,
+        10
+      ],
+      "description": "Ein abgestimmtes Datenformat pro Quelle; Bereinigung nach Sichtung."
+    },
+    {
+      "id": "workshops",
+      "group": "Zusammenarbeit & Qualität",
+      "label": "Konzept- & Schulungstermine",
+      "unit": "Termine",
+      "quantities": [
+        1,
+        1,
+        2,
+        3,
+        4,
+        6,
+        8,
+        10,
+        12
+      ],
+      "description": "Je Termin bis 60 Minuten, remote."
+    },
+    {
+      "id": "corrections",
+      "group": "Zusammenarbeit & Qualität",
+      "label": "Enthaltene Korrekturrunden",
+      "unit": "Runden",
+      "quantities": [
+        1,
+        1,
+        2,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8
+      ],
+      "description": "Eine gebündelte Feedbackrunde innerhalb des vereinbarten Umfangs; mehrere Zeitbuchungen zählen als eine Runde."
+    },
+    {
+      "id": "changes",
+      "group": "Zusammenarbeit & Qualität",
+      "label": "Komplettänderungen während der Entwicklung",
+      "unit": "Änderungen",
+      "quantities": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        2,
+        2,
+        3
+      ],
+      "description": "Je Änderung ein neu abgestimmter Entwurf oder Ablauf innerhalb des vereinbarten Mengenrahmens. Kein kompletter Neuaufbau der Gesamtplattform."
+    },
+    {
+      "id": "testing",
+      "group": "Zusammenarbeit & Qualität",
+      "label": "Abnahme- & Testdurchläufe",
+      "unit": "Durchläufe",
+      "quantities": [
+        1,
+        1,
+        1,
+        2,
+        2,
+        3,
+        3,
+        4,
+        5
+      ],
+      "description": "Funktion, mobile Darstellung und die vereinbarten Kernabläufe."
+    },
+    {
+      "id": "care_minutes",
+      "group": "Monatliche Betreuung",
+      "label": "Änderungszeit pro Monat",
+      "unit": "Minuten",
+      "quantities": [
+        15,
+        30,
+        60,
+        120,
+        240,
+        480,
+        720,
+        1200,
+        1800
+      ],
+      "description": "Gemeinsames Zeitkontingent für monatliche Änderungsaufträge, keine automatische Übertragung."
+    },
+    {
+      "id": "care_requests",
+      "group": "Monatliche Betreuung",
+      "label": "Änderungsaufträge pro Monat",
+      "unit": "Aufträge",
+      "quantities": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        10,
+        14,
+        20,
+        30
+      ],
+      "description": "Auftragsanzahl und enthaltene Minuten gelten gemeinsam."
+    },
+    {
+      "id": "care_systems",
+      "group": "Monatliche Betreuung",
+      "label": "Betreute Systeme",
+      "unit": "Systeme",
+      "quantities": [
+        1,
+        1,
+        1,
+        2,
+        3,
+        4,
+        6,
+        8,
+        12
+      ],
+      "description": "Vereinbarte Website-, Backend- oder Portalinstanzen."
+    },
+    {
+      "id": "care_checks",
+      "group": "Monatliche Betreuung",
+      "label": "Pflege- & Funktionschecks pro Monat",
+      "unit": "Checks",
+      "quantities": [
+        1,
+        1,
+        1,
+        2,
+        2,
+        4,
+        4,
+        4,
+        4
+      ],
+      "description": "Monitoring-Auswertung, Updates und vereinbarte Sicherungsprüfungen. Kein 24/7-SLA."
+    }
+  ]
+}

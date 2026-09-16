@@ -1,3 +1,6 @@
+import { readOfferCatalog } from "@/lib/offer-server";
+import { offerSelectionSchema } from "@/lib/offer-schema";
+import { calculateOffer, offerQuantity } from "@/lib/offer-catalog";
 import { NextResponse } from "next/server";
 import { timeAssignmentSchema } from "@/lib/time-assignment-schema";
 import { z } from "zod";
@@ -72,6 +75,44 @@ export async function POST(request: Request) {
           .single();
         break;
       }
+      case "project_offer": {
+        const p = z
+          .object({ id: uuid, configuration: offerSelectionSchema })
+          .parse(payload);
+        const catalog = await readOfferCatalog();
+        const quote = calculateOffer(catalog, p.configuration);
+        result = await client.rpc("nc_set_project_offer", {
+          p_user: user.id,
+          p_project: p.id,
+          p_quote: quote,
+          p_corrections: offerQuantity(quote, "corrections"),
+          p_changes: offerQuantity(quote, "changes"),
+        });
+        break;
+      }
+      case "project_limits": {
+        const p = z
+          .object({
+            id: uuid,
+            included_correction_rounds: z
+              .number()
+              .int()
+              .min(0)
+              .max(999)
+              .nullable(),
+            included_change_rounds: z.number().int().min(0).max(999).nullable(),
+            hourly_rate_cents: z.number().int().min(0).max(1000000),
+          })
+          .parse(payload);
+        result = await client.rpc("nc_set_project_limits", {
+          p_user: user.id,
+          p_project: p.id,
+          p_corrections: p.included_correction_rounds,
+          p_changes: p.included_change_rounds,
+          p_rate: p.hourly_rate_cents,
+        });
+        break;
+      }
       case "correction_settings": {
         const p = z
           .object({
@@ -99,6 +140,8 @@ export async function POST(request: Request) {
           p_entry: id,
           p_round: assignment.correction_round,
           p_change_request: assignment.change_request,
+          p_change_round: assignment.change_round,
+          p_extra_work: assignment.extra_work,
         });
         break;
       }
@@ -136,6 +179,8 @@ export async function POST(request: Request) {
           p_stop: p.stopped_at,
           p_correction_round: assignment.correction_round,
           p_change_request: assignment.change_request,
+          p_change_round: assignment.change_round,
+          p_extra_work: assignment.extra_work,
         });
         break;
       }
@@ -151,7 +196,7 @@ export async function POST(request: Request) {
           .object({
             customer_id: uuid,
             name: text,
-            package: z.enum(["Launch", "Business", "Enterprise"]),
+            package: z.enum(["Basic", "Launch", "Business", "Enterprise"]),
             budget_cents: cents,
             waiting_billable: z.boolean(),
             included_correction_rounds: z
@@ -223,6 +268,8 @@ export async function POST(request: Request) {
           p_description: p.description,
           p_correction_round: assignment.correction_round,
           p_change_request: assignment.change_request,
+          p_change_round: assignment.change_round,
+          p_extra_work: assignment.extra_work,
         });
         break;
       }
@@ -238,7 +285,7 @@ export async function POST(request: Request) {
         const p = z
           .object({
             project_id: uuid,
-            plan: z.enum(["Care", "Care Plus", "Care Dedicated"]),
+
             starts_on: z.iso.date(),
           })
           .parse(payload);
@@ -246,16 +293,32 @@ export async function POST(request: Request) {
           throw new Error(
             "Betreuungsbeginn muss der erste Tag eines Monats sein.",
           );
-        const plans = {
-          Care: [24900, 60],
-          "Care Plus": [74900, 240],
-          "Care Dedicated": [199000, 720],
-        };
-        result = await client.from("nc_subscriptions").insert({
-          ...p,
-          monthly_cents: plans[p.plan][0],
-          included_minutes: plans[p.plan][1],
-        });
+        const r = await client
+          .from("nc_projects")
+          .select("offer_snapshot")
+          .eq("id", p.project_id)
+          .single();
+        if (r.error || !r.data.offer_snapshot)
+          throw Error(
+            "Bitte zuerst den Projektumfang samt Betreuung vereinbaren.",
+          );
+        const quote = r.data.offer_snapshot;
+        result = await client
+          .from("nc_subscriptions")
+          .insert({
+            project_id: p.project_id,
+            starts_on: p.starts_on,
+            plan:
+              quote.package === "Basic"
+                ? "Care"
+                : quote.package === "Business"
+                  ? "Care Plus"
+                  : "Care Dedicated",
+            monthly_cents: quote.monthly_cents,
+            included_minutes: offerQuantity(quote, "care_minutes"),
+            offer_snapshot: quote,
+            included_requests: offerQuantity(quote, "care_requests"),
+          });
         break;
       }
       case "subscription_end": {

@@ -18,7 +18,12 @@ import {
   Plus,
   Minus,
 } from "lucide-react";
-import { brandSlogan, packages, care, projects } from "@/lib/content";
+import OfferConfigurator, {
+  CareOverview,
+  OfferSummary,
+} from "./offer-configurator";
+import type { OfferQuote } from "@/lib/offer-catalog";
+import { brandSlogan, projects } from "@/lib/content";
 const services = [
   {
     icon: Globe2,
@@ -53,6 +58,8 @@ const services = [
 ];
 export default function Landing() {
   const [menu, setMenu] = useState(false);
+  const [liveQuote, setLiveQuote] = useState<OfferQuote | null>(null);
+  const [configured, setConfigured] = useState(false);
   const [selected, setSelected] = useState("Noch offen");
   const [pending, setPending] = useState(false);
   const [notice, setNotice] = useState("");
@@ -68,7 +75,15 @@ export default function Landing() {
         const r = await fetch("/api/contact", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
+          body: JSON.stringify({
+            ...data,
+            ...(configured && liveQuote
+              ? {
+                  package: liveQuote.package,
+                  configuration: liveQuote.selection,
+                }
+              : {}),
+          }),
         });
         return [r, await r.json()] as const;
       });
@@ -86,6 +101,7 @@ export default function Landing() {
     }
   }
   function choose(name: string) {
+    setConfigured(false);
     setSelected(name);
     document.getElementById("kontakt")?.scrollIntoView({ behavior: "smooth" });
   }
@@ -334,59 +350,17 @@ export default function Landing() {
               gemeinsam, was Ihr Unternehmen wirklich braucht.
             </p>
           </div>
-          <div className="pricing-grid">
-            {packages.map((p, i) => (
-              <article
-                className={"price-card " + (i === 1 ? "featured" : "")}
-                key={p.name}
-              >
-                {i === 1 && (
-                  <span className="featured-label">WEBSITE + CRM</span>
-                )}
-                <p className="eyebrow">{p.tag}</p>
-                <h3>{p.name}</h3>
-                <p>{p.text}</p>
-                <div className="price">
-                  {p.price ? (
-                    <>
-                      <small>ab</small> {p.price}
-                      <span> €</span>
-                    </>
-                  ) : (
-                    <span className="request-price">Auf Anfrage</span>
-                  )}
-                </div>
-                <small className="price-sub">
-                  {p.price
-                    ? "einmalige Entwicklung · netto"
-                    : "individuell nach Projektumfang"}
-                </small>
-                <button
-                  className={"button " + (i === 1 ? "" : "outline")}
-                  onClick={() => choose(p.name)}
-                >
-                  {p.name === "Enterprise"
-                    ? "Projekt besprechen"
-                    : p.name + " planen"}
-                  <ArrowUpRight size={17} />
-                </button>
-                <ul>
-                  {p.features.map((f) => (
-                    <li key={f}>
-                      <Check size={16} />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-              </article>
-            ))}
-          </div>
-          <p className="footnote">
-            Alle Preise zzgl. gesetzlicher Umsatzsteuer. Verbindlicher Umfang
-            nach Projektaufnahme. Hosting, Softwarelizenzen und Verbrauchskosten
-            separat. Ein vollständiges Unternehmenssystem wird individuell
-            kalkuliert.
-          </p>
+          <OfferConfigurator
+            onChange={setLiveQuote}
+            onRequest={(quote) => {
+              setLiveQuote(quote);
+              setConfigured(true);
+              setSelected(quote.package);
+              document
+                .getElementById("kontakt")
+                ?.scrollIntoView({ behavior: "smooth" });
+            }}
+          />
         </section>
         <section id="betreuung" className="section care-section">
           <div className="wrap">
@@ -404,50 +378,12 @@ export default function Landing() {
                 festen Kontingenten und einem direkten Ansprechpartner.
               </p>
             </div>
-            <div className="care-grid">
-              {care.map((p) => (
-                <article key={p.name}>
-                  <h3>{p.name}</h3>
-                  <p>{p.text}</p>
-                  <div className="price">
-                    {p.name === "Care Dedicated" && <small>ab </small>}
-                    {p.price}
-                    <span> €</span>
-                    <small> / Monat</small>
-                  </div>
-                  <ul>
-                    <li>
-                      <Check size={15} />
-                      Bis zu {p.changes} Änderungsaufträge
-                    </li>
-                    <li>
-                      <Check size={15} />
-                      {p.hours} gemeinsames Änderungsbudget
-                    </li>
-                    <li>
-                      <Check size={15} />
-                      Rückmeldung in {p.response}
-                    </li>
-                    <li>
-                      <Check size={15} />
-                      Monitoring & technische Pflege
-                    </li>
-                  </ul>
-                  <button
-                    className="text-link"
-                    onClick={() => choose("Noch offen")}
-                  >
-                    Betreuung besprechen <ArrowRight size={16} />
-                  </button>
-                </article>
-              ))}
-            </div>
+            <CareOverview quote={liveQuote} />
             <p className="footnote">
-              Netto, zzgl. Anbietergebühren. Auftragsanzahl und Gesamtzeit
-              gelten gemeinsam. Zusätzliche Arbeiten nach Freigabe: 140
-              €/Stunde. Rückmeldung während der Servicezeiten Mo–Fr, 9–17 Uhr;
-              keine garantierte Behebungszeit. Details werden im Angebot
-              vereinbart.
+              Betreuung von 49 bis 5.000 € netto pro Monat, abhängig vom
+              gewählten Umfang. Domain-Verwaltung zusätzlich 2–5 € netto je
+              Domain und Monat. Anbieter-, Hosting- und Verbrauchskosten
+              separat. Mehrarbeit nach Freigabe: 150 € netto/Stunde.
             </p>
           </div>
         </section>
@@ -505,6 +441,21 @@ export default function Landing() {
             </p>
           </div>
           <form onSubmit={contact} className="contact-form">
+            {configured && liveQuote && (
+              <>
+                <OfferSummary quote={liveQuote} details />
+                <p>
+                  Diese Auswahl wird zusammen mit Ihrer Anfrage gespeichert.
+                </p>
+                <button
+                  type="button"
+                  className="text-link"
+                  onClick={() => setConfigured(false)}
+                >
+                  Konfiguration aus Anfrage entfernen
+                </button>
+              </>
+            )}
             <div className="form-pair">
               <label>
                 Ihr Name
@@ -533,10 +484,13 @@ export default function Landing() {
               Was interessiert Sie?
               <select
                 name="package"
-                value={selected}
-                onChange={(e) => setSelected(e.target.value)}
+                value={configured && liveQuote ? liveQuote.package : selected}
+                onChange={(e) => {
+                  setConfigured(false);
+                  setSelected(e.target.value);
+                }}
               >
-                {["Noch offen", "Launch", "Business", "Enterprise"].map((s) => (
+                {["Noch offen", "Basic", "Business", "Enterprise"].map((s) => (
                   <option key={s}>{s}</option>
                 ))}
               </select>

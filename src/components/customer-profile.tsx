@@ -1,6 +1,9 @@
 "use client";
+import { extraAmount } from "@/lib/time-report";
 import Link from "./app-link";
 import { useState } from "react";
+import ProjectOffer from "./project-offer";
+import type { OfferQuote } from "@/lib/offer-catalog";
 import CustomerFields from "./customer-fields";
 import {
   CorrectionProjectSettings,
@@ -41,6 +44,9 @@ type Project = {
   status: string;
   budget_cents: number;
   hourly_rate_cents?: number;
+  waiting_billable?: boolean;
+  included_change_rounds?: number | null;
+  offer_snapshot?: OfferQuote | null;
   included_correction_rounds?: number | null;
 };
 type Invoice = {
@@ -236,12 +242,40 @@ export function TimeReport({
             ))}
           </div>
           <p className="footnote">
-            Außerhalb des vereinbarten Projektumfangs; zur gesonderten
-            Abrechnung vorgemerkt. Diese Zeiten sind bereits in den Gesamtzeiten
-            enthalten und verbrauchen keine Korrekturrunden.
+            Enthaltene und zusätzliche Änderungen werden je Änderungsnummer
+            zugeordnet. Noch nicht nummerierte Änderungen bleiben zur Prüfung
+            offen. Diese Zeiten sind bereits in den Gesamtzeiten enthalten und
+            verbrauchen keine Korrekturrunden.
           </p>
         </div>
       )}
+      <div className="info-box">
+        <strong>
+          Zusätzlicher Aufwand / freigegebene Einzelzeiten:{" "}
+          {new Intl.NumberFormat("de-DE", {
+            style: "currency",
+            currency: "EUR",
+          }).format(
+            rows.reduce(
+              (sum, t) =>
+                sum +
+                extraAmount(
+                  t,
+                  projects.find((p) => p.id === t.project_id),
+                  window,
+                ),
+              0,
+            ) / 100,
+          )}{" "}
+          netto
+        </strong>
+        <p>
+          Abgeschlossene externe Zusatzzeiten zum vereinbarten
+          Projektstundensatz. Enthaltene Leistungen werden nicht zusätzlich
+          berechnet. Freigegebene Zeiten behalten ihren gespeicherten Satz.
+          Ungeprüfte Beträge sind vorläufig; dies ist keine Rechnung.
+        </p>
+      </div>
       <p className="footnote">
         Stand: {new Date(now).toLocaleString("de-DE")}. Interne und externe
         Zeiten werden getrennt ausgewiesen. Monatsgrenzen: Europe/Berlin;
@@ -277,8 +311,15 @@ export function TimeReport({
                       t,
                       projects.find((p) => p.id === t.project_id)
                         ?.included_correction_rounds,
+                      projects.find((p) => p.id === t.project_id)
+                        ?.included_change_rounds,
                     )}
                   </small>
+                  {t.extra_work && (
+                    <p className="change-request-note">
+                      <strong>Zusatzumfang:</strong> {t.extra_work}
+                    </p>
+                  )}
                   {t.change_request != null && (
                     <p className="change-request-note">
                       <strong>Kundenwunsch:</strong> {t.change_request}
@@ -289,7 +330,9 @@ export function TimeReport({
                       key={
                         t.id +
                         String(t.correction_round) +
-                        String(t.change_request)
+                        String(t.change_request) +
+                        String(t.change_round) +
+                        String(t.extra_work)
                       }
                       entry={t}
                       project={projects.find((p) => p.id === t.project_id)}
@@ -312,7 +355,35 @@ export function TimeReport({
                     }
                   </small>
                 </td>
-                <td>{timeDuration(reportSeconds(t, window))}</td>
+                <td>
+                  {timeDuration(reportSeconds(t, window))}
+                  {extraAmount(
+                    t,
+                    projects.find((p) => p.id === t.project_id),
+                    window,
+                  ) > 0 && (
+                    <small>
+                      {money(
+                        extraAmount(
+                          t,
+                          projects.find((p) => p.id === t.project_id),
+                          window,
+                        ),
+                      )}{" "}
+                      netto ·{" "}
+                      {money(
+                        t.approved_at
+                          ? (t.approved_rate_cents ??
+                              projects.find((p) => p.id === t.project_id)
+                                ?.hourly_rate_cents ??
+                              0)
+                          : (projects.find((p) => p.id === t.project_id)
+                              ?.hourly_rate_cents ?? 0),
+                      )}
+                      /h
+                    </small>
+                  )}
+                </td>
                 <td>
                   {!t.stopped_at
                     ? "Läuft"
@@ -510,8 +581,14 @@ export default function CustomerProfile({
                       .reduce((s, t) => s + reportSeconds(t, [0, now]), 0),
                   )}
                 </p>
+                <ProjectOffer project={p} mutate={mutate} busy={busy} />
                 <CorrectionProjectSettings
-                  key={p.id + String(p.included_correction_rounds)}
+                  key={
+                    p.id +
+                    String(p.included_correction_rounds) +
+                    String(p.included_change_rounds) +
+                    String(p.hourly_rate_cents)
+                  }
                   project={p}
                   times={ct}
                   mutate={mutate}

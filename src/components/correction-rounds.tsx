@@ -2,7 +2,9 @@
 import { useId, useState } from "react";
 import {
   correctionLabel,
+  assignmentLabel,
   usedCorrectionRounds,
+  usedChangeRounds,
   type CorrectionProject,
   type CorrectionTime,
   type TimeAssignment,
@@ -28,6 +30,7 @@ export function CorrectionFields({
   const listId = useId();
   const value = assignment.correction_round;
   const isChange = assignment.change_request != null;
+  const isExtra = assignment.extra_work != null;
   const rounds = project ? usedCorrectionRounds(times, project.id) : [];
   return (
     <div className="correction-fields">
@@ -35,22 +38,45 @@ export function CorrectionFields({
         Leistungszuordnung
         <select
           disabled={disabled || !project}
-          value={isChange ? "change" : value == null ? "regular" : "correction"}
+          value={
+            isExtra
+              ? "extra"
+              : isChange
+                ? "change"
+                : value == null
+                  ? "regular"
+                  : "correction"
+          }
           onChange={(e) =>
             onChange(
-              e.target.value === "change"
-                ? { correction_round: null, change_request: "" }
-                : {
-                    correction_round:
-                      e.target.value === "regular" ? null : rounds.at(-1) || 1,
+              e.target.value === "extra"
+                ? {
+                    correction_round: null,
                     change_request: null,
-                  },
+                    extra_work: "",
+                    change_round: null,
+                  }
+                : e.target.value === "change"
+                  ? {
+                      correction_round: null,
+                      change_request: "",
+                      change_round: 1,
+                      extra_work: null,
+                    }
+                  : {
+                      correction_round:
+                        e.target.value === "regular"
+                          ? null
+                          : rounds.at(-1) || 1,
+                      change_request: null,
+                    },
             )
           }
         >
           <option value="regular">Reguläre Projektarbeit</option>
           <option value="correction">Korrekturrunde</option>
           <option value="change">Abänderung durch Kunden</option>
+          <option value="extra">Zusatzleistung außerhalb des Pakets</option>
         </select>
       </label>
       <button
@@ -65,13 +91,48 @@ export function CorrectionFields({
           onChange({
             correction_round: null,
             change_request: assignment.change_request ?? "",
+            change_round: assignment.change_round ?? 1,
+            extra_work: null,
           })
         }
       >
         Abänderung
       </button>
+      {isExtra && (
+        <label>
+          Zusätzlicher Umfang / Vereinbarung
+          <textarea
+            required
+            minLength={3}
+            maxLength={2000}
+            disabled={disabled}
+            value={assignment.extra_work ?? ""}
+            placeholder="Zum Beispiel: 3 zusätzliche Seiten außerhalb des Pakets; Kundenfreigabe vom …"
+            onChange={(e) =>
+              onChange({ ...assignment, extra_work: e.target.value })
+            }
+          />
+        </label>
+      )}
       {isChange && (
         <>
+          <label>
+            Komplettänderung Nr.
+            <input
+              required
+              type="number"
+              min="1"
+              max="999"
+              value={assignment.change_round ?? ""}
+              disabled={disabled}
+              onChange={(e) =>
+                onChange({
+                  ...assignment,
+                  change_round: Number(e.target.value),
+                })
+              }
+            />
+          </label>
           <label className="change-request-field">
             Kundenwunsch / Abweichung vom vereinbarten Umfang
             <textarea
@@ -83,6 +144,7 @@ export function CorrectionFields({
               placeholder="Was war vereinbart? Was soll auf Wunsch des Kunden geändert werden? Anlass, Datum und ggf. Verweis auf die Kundenanfrage festhalten."
               onChange={(e) =>
                 onChange({
+                  ...assignment,
                   correction_round: null,
                   change_request: e.target.value,
                 })
@@ -90,9 +152,13 @@ export function CorrectionFields({
             />
           </label>
           <p className="correction-hint">
-            Außerhalb des normalen Projektumfangs. Wird separat dokumentiert und
-            zur gesonderten Abrechnung vorgemerkt. Enthaltene Korrekturrunden
-            werden nicht verbraucht.
+            {assignmentLabel(
+              assignment,
+              project?.included_correction_rounds,
+              project?.included_change_rounds,
+            )}
+            . Mehrere Zeiteinträge derselben Änderungsnummer zählen als eine
+            Änderung. Enthaltene Korrekturrunden werden nicht verbraucht.
           </p>
         </>
       )}
@@ -154,7 +220,7 @@ export function CorrectionProjectSettings({
   return (
     <details className="correction-settings">
       <summary>
-        Korrekturrunden ·{" "}
+        Korrekturen, Änderungen & Stundensatz ·{" "}
         {included == null ? "Paketumfang offen" : `${included} im Paket`}
       </summary>
       <form
@@ -163,9 +229,14 @@ export function CorrectionProjectSettings({
           const f = new FormData(e.currentTarget);
           const v = String(f.get("included_correction_rounds") || "");
           setSaved(
-            await mutate("correction_settings", {
+            await mutate("project_limits", {
               id: project.id,
               included_correction_rounds: v === "" ? null : Number(v),
+              included_change_rounds:
+                f.get("included_change_rounds") === ""
+                  ? null
+                  : Number(f.get("included_change_rounds")),
+              hourly_rate_cents: Math.round(Number(f.get("hourly_rate")) * 100),
             }),
           );
         }}
@@ -183,6 +254,36 @@ export function CorrectionProjectSettings({
             onChange={() => setSaved(false)}
           />
         </label>
+        <label>
+          Enthaltene Komplettänderungen
+          <input
+            name="included_change_rounds"
+            type="number"
+            min="0"
+            max="999"
+            step="1"
+            defaultValue={project.included_change_rounds ?? ""}
+            placeholder="Noch nicht vereinbart"
+            onChange={() => setSaved(false)}
+          />
+        </label>
+        <label>
+          Vereinbarter Stundensatz für Mehrarbeit (netto €)
+          <input
+            name="hourly_rate"
+            type="number"
+            min="0"
+            max="10000"
+            step="0.01"
+            required
+            defaultValue={(project.hourly_rate_cents ?? 15000) / 100}
+            onChange={() => setSaved(false)}
+          />
+        </label>
+        <p className="footnote">
+          Individuelle Vereinbarungen haben Vorrang vor dem gespeicherten
+          Katalogumfang. Bereits freigegebene Zeiten behalten ihren Stundensatz.
+        </p>
         <p className="footnote">
           Leer = noch offen · 0 = keine enthalten. Die ersten angegebenen Runden
           gehören zum Paket. Weitere Runden werden als Zusatzzeit ausgewiesen;
@@ -193,6 +294,13 @@ export function CorrectionProjectSettings({
           {included != null
             ? ` · ${rounds.filter((n) => n <= included).length} im Paket genutzt · ${rounds.filter((n) => n > included).length} zusätzlich`
             : ""}
+        </p>
+        <p>
+          {usedChangeRounds(times, project.id).length} Komplettänderung(en)
+          erfasst
+          {project.included_change_rounds != null
+            ? ` · ${usedChangeRounds(times, project.id).filter((n) => n <= project.included_change_rounds!).length} im Paket genutzt · ${usedChangeRounds(times, project.id).filter((n) => n > project.included_change_rounds!).length} zusätzlich`
+            : " · Kontingent offen"}
         </p>
         <button className="button small outline" disabled={busy}>
           Paketumfang speichern
@@ -222,6 +330,8 @@ export function CorrectionAssignment({
   const [assignment, setAssignment] = useState<TimeAssignment>({
     correction_round: entry.correction_round ?? null,
     change_request: entry.change_request ?? null,
+    change_round: entry.change_round ?? null,
+    extra_work: entry.extra_work ?? null,
   });
   const [saved, setSaved] = useState(false);
   if (entry.approved_at || !entry.stopped_at) return null;

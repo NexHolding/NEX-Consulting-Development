@@ -4,6 +4,10 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "./app-link";
 import { Brand } from "./brand";
 import TimerCard from "./timer-card";
+import CatalogAdmin from "./catalog-admin";
+import { OfferSummary } from "./offer-configurator";
+import type { OfferQuote } from "@/lib/offer-catalog";
+import ProjectOffer from "./project-offer";
 import {
   CorrectionFields,
   CorrectionProjectSettings,
@@ -11,6 +15,7 @@ import {
 } from "./correction-rounds";
 import {
   assignmentLabel,
+  assignmentStatus,
   validTimeAssignment,
   type TimeAssignment,
 } from "@/lib/correction-rounds";
@@ -50,6 +55,9 @@ type Project = {
   waiting_billable: boolean;
   included_correction_rounds?: number | null;
   notes: string;
+  offer_snapshot?: OfferQuote | null;
+  included_change_rounds?: number | null;
+  hourly_rate_cents?: number;
 };
 type Time = {
   id: string;
@@ -63,9 +71,14 @@ type Time = {
   approved_at: string | null;
   correction_round?: number | null;
   change_request?: string | null;
+  change_round?: number | null;
+  extra_work?: string | null;
+  approved_rate_cents?: number | null;
 };
 type Task = { id: string; project_id: string; title: string; done: boolean };
 type Subscription = {
+  included_requests?: number | null;
+  offer_snapshot?: OfferQuote | null;
   id: string;
   project_id: string;
   plan: string;
@@ -87,6 +100,7 @@ type Invoice = {
   number: string | null;
 };
 type Lead = {
+  offer_snapshot?: OfferQuote | null;
   id: string;
   name: string;
   company: string;
@@ -527,6 +541,8 @@ export default function Workspace({ initial }: { initial: unknown }) {
                       live,
                       data.projects.find((p) => p.id === live.project_id)
                         ?.included_correction_rounds,
+                      data.projects.find((p) => p.id === live.project_id)
+                        ?.included_change_rounds,
                     )
                   : kind === "internal"
                     ? "Tatsächliche aktive Arbeit. Nur intern sichtbar."
@@ -551,6 +567,8 @@ export default function Workspace({ initial }: { initial: unknown }) {
                     ? {
                         correction_round: live.correction_round ?? null,
                         change_request: live.change_request ?? null,
+                        change_round: live.change_round ?? null,
+                        extra_work: live.extra_work ?? null,
                       }
                     : assignment),
                 })
@@ -1052,8 +1070,14 @@ export default function Workspace({ initial }: { initial: unknown }) {
                           ))}
                         </select>
                       </label>
+                      <ProjectOffer project={p} mutate={mutate} busy={busy} />
                       <CorrectionProjectSettings
-                        key={p.id + String(p.included_correction_rounds)}
+                        key={
+                          p.id +
+                          String(p.included_correction_rounds) +
+                          String(p.included_change_rounds) +
+                          String(p.hourly_rate_cents)
+                        }
                         project={p}
                         times={data.time_entries}
                         mutate={mutate}
@@ -1179,8 +1203,17 @@ export default function Workspace({ initial }: { initial: unknown }) {
                                     data.projects.find(
                                       (p) => p.id === t.project_id,
                                     )?.included_correction_rounds,
+                                    data.projects.find(
+                                      (p) => p.id === t.project_id,
+                                    )?.included_change_rounds,
                                   )}
                                 </small>
+                                {t.extra_work && (
+                                  <p className="change-request-note">
+                                    <strong>Zusatzumfang:</strong>{" "}
+                                    {t.extra_work}
+                                  </p>
+                                )}
                                 {t.change_request != null && (
                                   <small className="change-request-note">
                                     <strong>Kundenwunsch:</strong>{" "}
@@ -1191,7 +1224,9 @@ export default function Workspace({ initial }: { initial: unknown }) {
                                   key={
                                     t.id +
                                     String(t.correction_round) +
-                                    String(t.change_request)
+                                    String(t.change_request) +
+                                    String(t.change_round) +
+                                    String(t.extra_work)
                                   }
                                   entry={t}
                                   project={data.projects.find(
@@ -1234,12 +1269,32 @@ export default function Workspace({ initial }: { initial: unknown }) {
                                     Freigegeben
                                   </span>
                                 ) : t.kind === "external" &&
-                                  (t.correction_round != null ||
-                                    t.change_request != null) ? (
+                                  (["included", "open"].includes(
+                                    assignmentStatus(
+                                      t,
+                                      data.projects.find(
+                                        (p) => p.id === t.project_id,
+                                      ),
+                                    ),
+                                  ) ||
+                                    (assignmentStatus(
+                                      t,
+                                      data.projects.find(
+                                        (p) => p.id === t.project_id,
+                                      ),
+                                    ) === "regular" &&
+                                      data.projects.find(
+                                        (p) => p.id === t.project_id,
+                                      )?.offer_snapshot)) ? (
                                   <span className="muted">
-                                    {t.change_request != null
-                                      ? "Abänderung · Gesonderte Abrechnung offen"
-                                      : "Abrechnung der Korrekturrunde offen"}
+                                    {assignmentStatus(
+                                      t,
+                                      data.projects.find(
+                                        (p) => p.id === t.project_id,
+                                      ),
+                                    ) === "open"
+                                      ? "Paketumfang / Zuordnung offen"
+                                      : "Im Paket enthalten"}
                                   </span>
                                 ) : t.kind === "external" &&
                                   t.stopped_at &&
@@ -1352,7 +1407,15 @@ export default function Workspace({ initial }: { initial: unknown }) {
                         {money(s.monthly_cents)}
                         <small> / Monat</small>
                       </div>
-                      <p>{s.included_minutes / 60} Stunden Änderungsbudget</p>
+                      <p>
+                        {s.included_minutes} Minuten Änderungsbudget / Monat
+                        {s.included_requests != null
+                          ? ` · bis zu ${s.included_requests} Anfragen`
+                          : ""}
+                      </p>
+                      {s.offer_snapshot && (
+                        <OfferSummary quote={s.offer_snapshot} details />
+                      )}
                       <small>
                         Beginn: {date(s.starts_on)}
                         {s.ends_on ? " · Ende: " + date(s.ends_on) : ""}
@@ -1476,6 +1539,9 @@ export default function Workspace({ initial }: { initial: unknown }) {
                       <h3>{l.name}</h3>
                       <small>{l.company}</small>
                       <p>{l.message}</p>
+                      {l.offer_snapshot && (
+                        <OfferSummary quote={l.offer_snapshot} details />
+                      )}
                       <span>{l.email}</span>
                       <label>
                         Bearbeitungsstatus
@@ -1512,6 +1578,7 @@ export default function Workspace({ initial }: { initial: unknown }) {
               )}
             </section>
           )}
+          {tab === "Einstellungen" && <CatalogAdmin />}
           {tab === "Einstellungen" && (
             <section className="panel settings-panel">
               <h2>Ihr Workspace</h2>
@@ -1618,7 +1685,7 @@ export default function Workspace({ initial }: { initial: unknown }) {
                     <label>
                       Paket
                       <select name="package">
-                        {["Launch", "Business", "Enterprise"].map((s) => (
+                        {["Basic", "Business", "Enterprise"].map((s) => (
                           <option key={s}>{s}</option>
                         ))}
                       </select>
@@ -1661,7 +1728,12 @@ export default function Workspace({ initial }: { initial: unknown }) {
               {["task", "subscription", "invoice"].includes(modal) && (
                 <label>
                   Projekt
-                  <select name="project_id" required defaultValue={selected}>
+                  <select
+                    name="project_id"
+                    required
+                    value={selected}
+                    onChange={(e) => setSelected(e.target.value)}
+                  >
                     <option value="">Bitte auswählen</option>
                     {data.projects.map((p) => (
                       <option value={p.id} key={p.id}>
@@ -1761,14 +1833,21 @@ export default function Workspace({ initial }: { initial: unknown }) {
               )}
               {modal === "subscription" && (
                 <>
-                  <label>
-                    Betreuungspaket
-                    <select name="plan">
-                      <option>Care</option>
-                      <option>Care Plus</option>
-                      <option>Care Dedicated</option>
-                    </select>
-                  </label>
+                  {data.projects.find((p) => p.id === selected)
+                    ?.offer_snapshot ? (
+                    <OfferSummary
+                      quote={
+                        data.projects.find((p) => p.id === selected)!
+                          .offer_snapshot!
+                      }
+                      details
+                    />
+                  ) : (
+                    <p className="info-box">
+                      Bitte zuerst im Projekt den Paketumfang und die Betreuung
+                      vereinbaren.
+                    </p>
+                  )}
                   <label>
                     Startdatum (Monatserster)
                     <input
@@ -1779,9 +1858,10 @@ export default function Workspace({ initial }: { initial: unknown }) {
                     />
                   </label>
                   <p className="footnote">
-                    249 € / 1 Stunde, 749 € / 4 Stunden oder 1.990 € / 12
-                    Stunden pro Monat, jeweils netto. Der Monatslauf erstellt
-                    Entwürfe ab dem gewählten Monat. Kein automatischer Versand.
+                    Preis, Domains und monatliche Kontingente werden aus dem
+                    vereinbarten Projektumfang übernommen. Der Monatslauf
+                    erstellt Entwürfe ab dem gewählten Monat. Kein automatischer
+                    Versand.
                   </p>
                 </>
               )}
