@@ -17,6 +17,26 @@ export default function CatalogAdmin() {
       </p>
       {error && <p role="alert">{error}</p>}
       <label>
+        Monatliche Preisgestaltung
+        <select
+          value={catalog.monthlyPricing ?? "linear"}
+          onChange={(e) =>
+            setCatalog({
+              ...catalog,
+              monthlyPricing: e.target.value as "linear" | "commercial",
+            })
+          }
+        >
+          <option value="commercial">Verkaufsstufen · 49 / 99 / 149 / …</option>
+          <option value="linear">Linear · auf volle Euro gerundet</option>
+        </select>
+      </label>
+      <p className="footnote">
+        Verkaufsstufen runden Zwischenpreise auf den nächstgelegenen
+        49-/99-Betrag. Gespeicherte Eckpreise und die Obergrenze 5.000 € bleiben
+        erhalten.
+      </p>
+      <label>
         Preisstufe
         <select
           value={point}

@@ -9,6 +9,7 @@ export const offerSelectionSchema = z.object({
 export const offerCatalogSchema = z
   .object({
     version: z.number().int().positive(),
+    monthlyPricing: z.enum(["linear", "commercial"]).optional(),
     points: z
       .array(
         z.object({

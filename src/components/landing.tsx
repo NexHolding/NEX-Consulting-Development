@@ -58,7 +58,8 @@ const services = [
 ];
 export default function Landing() {
   const [menu, setMenu] = useState(false);
-  const [liveQuote, setLiveQuote] = useState<OfferQuote | null>(null);
+  const [offerOptions, setOfferOptions] = useState<OfferQuote[]>([]);
+  const [requestedQuote, setRequestedQuote] = useState<OfferQuote | null>(null);
   const [configured, setConfigured] = useState(false);
   const [selected, setSelected] = useState("Noch offen");
   const [pending, setPending] = useState(false);
@@ -77,10 +78,10 @@ export default function Landing() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             ...data,
-            ...(configured && liveQuote
+            ...(configured && requestedQuote
               ? {
-                  package: liveQuote.package,
-                  configuration: liveQuote.selection,
+                  package: requestedQuote.package,
+                  configuration: requestedQuote.selection,
                 }
               : {}),
           }),
@@ -99,6 +100,12 @@ export default function Landing() {
     } finally {
       setPending(false);
     }
+  }
+  function requestQuote(quote: OfferQuote) {
+    setRequestedQuote(quote);
+    setConfigured(true);
+    setSelected(quote.package);
+    document.getElementById("kontakt")?.scrollIntoView({ behavior: "smooth" });
   }
   function choose(name: string) {
     setConfigured(false);
@@ -340,26 +347,20 @@ export default function Landing() {
             <div>
               <p className="eyebrow">03 / KLARER UMFANG. KLARER EINSTIEG.</p>
               <h2>
-                Große Möglichkeiten.
+                Ihr System. Ihr Umfang.
                 <br />
-                <em>Ihr passender Start.</em>
+                <em>Ihr passender Tarif.</em>
               </h2>
             </div>
             <p>
-              Von der ersten Website bis zur eigenen Plattform. Wir definieren
-              gemeinsam, was Ihr Unternehmen wirklich braucht.
+              Von der Website bis zur vernetzten Plattform: Stellen Sie Ihr
+              Paket mit dem Regler zusammen. Leistungen, Mengen und Betreuung
+              passen sich sofort an.
             </p>
           </div>
           <OfferConfigurator
-            onChange={setLiveQuote}
-            onRequest={(quote) => {
-              setLiveQuote(quote);
-              setConfigured(true);
-              setSelected(quote.package);
-              document
-                .getElementById("kontakt")
-                ?.scrollIntoView({ behavior: "smooth" });
-            }}
+            onOptionsChange={setOfferOptions}
+            onRequest={requestQuote}
           />
         </section>
         <section id="betreuung" className="section care-section">
@@ -370,15 +371,16 @@ export default function Landing() {
                 <h2>
                   Online bleiben.
                   <br />
-                  <em>Weiterkommen.</em>
+                  <em>Planbar weiterkommen.</em>
                 </h2>
               </div>
               <p>
                 Technische Pflege und planbare Anpassungen nach dem Start. Mit
-                festen Kontingenten und einem direkten Ansprechpartner.
+                festen Kontingenten und einem direkten Ansprechpartner. Die drei
+                Monatsbeiträge folgen Ihrer jeweiligen Paketauswahl oben.
               </p>
             </div>
-            <CareOverview quote={liveQuote} />
+            <CareOverview quotes={offerOptions} onRequest={requestQuote} />
             <p className="footnote">
               Betreuung von 49 bis 5.000 € netto pro Monat, abhängig vom
               gewählten Umfang. Domain-Verwaltung zusätzlich 2–5 € netto je
@@ -441,9 +443,9 @@ export default function Landing() {
             </p>
           </div>
           <form onSubmit={contact} className="contact-form">
-            {configured && liveQuote && (
+            {configured && requestedQuote && (
               <>
-                <OfferSummary quote={liveQuote} details />
+                <OfferSummary quote={requestedQuote} details />
                 <p>
                   Diese Auswahl wird zusammen mit Ihrer Anfrage gespeichert.
                 </p>
@@ -484,7 +486,11 @@ export default function Landing() {
               Was interessiert Sie?
               <select
                 name="package"
-                value={configured && liveQuote ? liveQuote.package : selected}
+                value={
+                  configured && requestedQuote
+                    ? requestedQuote.package
+                    : selected
+                }
                 onChange={(e) => {
                   setConfigured(false);
                   setSelected(e.target.value);

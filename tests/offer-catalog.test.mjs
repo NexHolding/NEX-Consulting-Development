@@ -1,7 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { calculateOffer, offerQuantity } from "../src/lib/offer-catalog.ts";
+import {
+  calculateOffer,
+  offerQuantity,
+  budgetForRequirements,
+} from "../src/lib/offer-catalog.ts";
 import { offerCatalogSchema } from "../src/lib/offer-schema.ts";
 import { extraAmount } from "../src/lib/time-report.ts";
 import {
@@ -18,7 +22,7 @@ const config = {
   logo: false,
   domains: 0,
   domainFee: 3,
-  catalogVersion: 1,
+  catalogVersion: catalog.version,
 };
 test("catalog produces exact endpoints, tiers, add-ons and immutable selection", () => {
   assert.equal(offerCatalogSchema.safeParse(catalog).success, true);
@@ -49,7 +53,7 @@ test("catalog produces exact endpoints, tiers, add-ons and immutable selection",
   for (const budget of [999, 100001, 1200.5, NaN])
     assert.throws(() => calculateOffer(catalog, { ...config, budget }));
   assert.throws(() =>
-    calculateOffer(catalog, { ...config, catalogVersion: 2 }),
+    calculateOffer(catalog, { ...config, catalogVersion: catalog.version + 1 }),
   );
   assert.throws(() => calculateOffer(catalog, { ...config, domains: -1 }));
 });
@@ -173,5 +177,64 @@ test("scope quotas prevent double billing; extra cost uses exact time and frozen
       change_round: 1,
     }),
     false,
+  );
+});
+
+test("requirements choose the smallest sufficient budget and detect out-of-catalog needs", () => {
+  const requirements = {
+    pages: 15,
+    modules: 5,
+    staff_users: 10,
+    agents: 2,
+    changes: 1,
+  };
+  const budget = budgetForRequirements(catalog, requirements);
+  assert.equal(budget, 20000);
+  const q = calculateOffer(catalog, { ...config, budget });
+  for (const [id, n] of Object.entries(requirements))
+    assert.ok(offerQuantity(q, id) >= n);
+  const smaller = calculateOffer(catalog, { ...config, budget: budget - 1 });
+  assert.ok(
+    Object.entries(requirements).some(
+      ([id, n]) => offerQuantity(smaller, id) < n,
+    ),
+  );
+  assert.equal(budgetForRequirements(catalog, { pages: 81 }), null);
+  assert.equal(budgetForRequirements(catalog, { pages: 1 }), 1000);
+  assert.throws(() => budgetForRequirements(catalog, { unknown_service: 1 }));
+  assert.throws(() => budgetForRequirements(catalog, { pages: 1.5 }));
+});
+test("commercial monthly prices are monotonic, preserve custom anchors and retain legacy calculation", () => {
+  const commercial = { ...catalog, monthlyPricing: "commercial" },
+    linear = { ...catalog, monthlyPricing: "linear" };
+  assert.equal(
+    calculateOffer(commercial, { ...config, budget: 1001 }).care_cents,
+    4900,
+  );
+  assert.equal(
+    calculateOffer(commercial, { ...config, budget: 1500 }).care_cents,
+    4900,
+  );
+  assert.equal(
+    calculateOffer(linear, { ...config, budget: 1500 }).care_cents,
+    6200,
+  );
+  let prev = 0;
+  for (let budget = 1000; budget <= 100000; budget += 53) {
+    const n = calculateOffer(commercial, { ...config, budget }).care_cents;
+    assert.ok(n >= prev);
+    assert.ok(n >= 4900 && n <= 500000);
+    prev = n;
+  }
+  for (const p of catalog.points)
+    assert.equal(
+      calculateOffer(commercial, { ...config, budget: p.budget }).care_cents,
+      p.monthly * 100,
+    );
+  const custom = structuredClone(commercial);
+  custom.points[1].monthly = 107;
+  assert.equal(
+    calculateOffer(custom, { ...config, budget: 3000 }).care_cents,
+    10700,
   );
 });

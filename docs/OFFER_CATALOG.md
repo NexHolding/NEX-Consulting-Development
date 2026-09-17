@@ -1,6 +1,6 @@
 # Angebotskonfigurator
 
-Der Leistungskatalog lässt sich im CRM unter **Einstellungen → Leistungskatalog** pflegen. Die initialen 28 Leistungen stehen in `src/lib/default-offer-catalog.json`. Der produktive Katalog wird anschließend in `nc_offer_catalog` gespeichert. Neue Leistungen, Mengen, Beschreibungen, Gruppen, Einheiten, innere Budgetstufen und monatliche Preise können ohne Codeänderung gepflegt werden.
+Der Leistungskatalog lässt sich im CRM unter **Einstellungen → Leistungskatalog** pflegen. Die 48 Leistungen stehen in `src/lib/default-offer-catalog.json`. Der produktive Katalog wird anschließend in `nc_offer_catalog` gespeichert. Neue Leistungen, Mengen, Beschreibungen, Gruppen, Einheiten, innere Budgetstufen und monatliche Preise können ohne Codeänderung gepflegt werden.
 
 ## Preislogik
 
@@ -16,9 +16,15 @@ Der Leistungskatalog lässt sich im CRM unter **Einstellungen → Leistungskatal
 | 75.000 € | 3.499 € |
 | 100.000 € | 5.000 € |
 
-Basic: unter 10.000 €. Business: 10.000 bis unter 35.000 €. Enterprise: ab 35.000 €. Zwischen Stufen wird linear interpoliert. Mengen werden abgerundet, monatliche Preise auf volle Euro gerundet. Basic enthält grundsätzlich keine Komplettänderungen, auch nach Katalogänderungen. Größere Pakete enthalten Änderungen abhängig von der ausgewiesenen Menge.
+Basic: unter 10.000 €. Business: 10.000 bis unter 35.000 €. Enterprise: ab 35.000 €. Zwischen Stufen wird linear interpoliert. Mengen werden abgerundet, monatliche Preise wahlweise auf volle Euro oder in verkaufsorientierte 49-/99-Stufen gerundet. Standard seit 17.09.2026: die nächstgelegene 49-/99-Stufe zwischen den administrierbaren Eckpreisen; Eckpreise und 49–5.000-€-Grenzen bleiben erhalten. Basic enthält grundsätzlich keine Komplettänderungen, auch nach Katalogänderungen. Größere Pakete enthalten Änderungen abhängig von der ausgewiesenen Menge.
 
 Logo optional: 299 € netto einmalig, Korrekturen innerhalb des Projektkontingents. Domain-Verwaltung optional: 2–5 € netto pro Domain und Monat. Domains werden zusätzlich zur Betreuung berechnet; daher kann die Gesamtsumme monatlich über 5.000 € liegen. Fremdanbieter-, Hosting-, Lizenz- und Verbrauchskosten sind separat. Die Konfiguration ist eine unverbindliche Kalkulation, der konkrete Umfang wird vor Beauftragung abgestimmt.
+
+## Bedienung auf der Landingpage
+
+Jedes der drei Pakete besitzt einen eigenen Budgetregler, exakte Betragseingabe, Budget-Schnellwahl, Logo-Option und Domain-Verwaltung. Mengen und Preise ändern sich in der jeweiligen Karte und der zugehörigen Betreuungskarte darunter. Der vollständige Vergleich nutzt dieselben Berechnungen.
+
+„Nach Bedarf berechnen“ sucht den kleinsten Katalogbudgetbetrag, der alle eingegebenen Mengen deckt. Der Kunde erhält den vollständig ausgewiesenen Paketumfang; die Anforderungseingaben sind eine Planungshilfe. Bei Anforderungen oberhalb des Katalogs wird kein falscher Preis ausgegeben. Eine ausgewählte Anfrage behält ihre Konfiguration, auch wenn danach andere Karten verglichen werden.
 
 ## Anfrage und Vereinbarung
 
@@ -41,3 +47,5 @@ Im Projekt kann der Admin einen bestätigten Umfang übernehmen. Er setzt Projek
 ## Veröffentlichung
 
 Migration `20260916180000_offer_catalog_scope.sql` vor oder zusammen mit dem Anwendungscode ausrollen. Sie bewahrt bestehende Kundenvereinbarungen und setzt den neuen Standardstundensatz nur für neue Projekte. Ohne Migration meldet der Konfigurator einen fehlenden Katalog und nimmt keine Konfigurationsanfrage entgegen. Keine Kundendaten in Seed-Dateien.
+
+Die additive Migration `20260917120000_expand_service_catalog.sql` ergänzt 20 fehlende Leistungen, passt ihre Mengen an vorhandene Budgetstufen an und erhöht die Katalogversion. Bestehende Leistungsdefinitionen, Preisstufen und gespeicherte Kundenangebote bleiben erhalten.

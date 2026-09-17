@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "points": [
     {
       "budget": 1000,
@@ -239,7 +239,7 @@
     },
     {
       "id": "finance_portals",
-      "group": "Backend & Portale",
+      "group": "Finance & Abrechnung",
       "label": "Finance-Portale",
       "unit": "Portale",
       "quantities": [
@@ -542,6 +542,367 @@
         4
       ],
       "description": "Monitoring-Auswertung, Updates und vereinbarte Sicherungsprüfungen. Kein 24/7-SLA."
+    },
+    {
+      "id": "responsive",
+      "group": "Website & Inhalte",
+      "label": "Responsive Darstellung",
+      "unit": "Einrichtung",
+      "description": "Optimierung der vereinbarten Seitentypen für Smartphone, Tablet und Desktop.",
+      "quantities": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "consent",
+      "group": "Website & Inhalte",
+      "label": "Cookie- & Einwilligungsverwaltung",
+      "unit": "Einrichtung",
+      "description": "Technische Einbindung passend zu den eingesetzten Diensten. Anbietergebühren separat.",
+      "quantities": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "redirects",
+      "group": "Website & Inhalte",
+      "label": "Weiterleitungen bestehender URLs",
+      "unit": "Weiterleitungen",
+      "description": "Übernahme abgestimmter alter URLs beim Relaunch.",
+      "quantities": [
+        0,
+        3,
+        5,
+        10,
+        20,
+        30,
+        50,
+        80,
+        120
+      ]
+    },
+    {
+      "id": "content_collections",
+      "group": "Website & Inhalte",
+      "label": "Redaktionelle Inhaltsbereiche",
+      "unit": "Bereiche",
+      "description": "Zum Beispiel Blog, Team, Referenzen oder Wissensbereich mit bearbeitbaren Inhalten.",
+      "quantities": [
+        0,
+        0,
+        1,
+        2,
+        4,
+        6,
+        10,
+        16,
+        24
+      ]
+    },
+    {
+      "id": "search",
+      "group": "Website & Inhalte",
+      "label": "Suche & Filter",
+      "unit": "Suchbereiche",
+      "description": "Abgestimmte Such- oder Filteransichten für Inhalte und Datensätze.",
+      "quantities": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "booking",
+      "group": "Backend & Portale",
+      "label": "Termin- & Buchungsabläufe",
+      "unit": "Abläufe",
+      "description": "Je Ablauf ein abgestimmter Buchungsprozess einschließlich Bestätigung.",
+      "quantities": [
+        0,
+        0,
+        0,
+        1,
+        2,
+        3,
+        4,
+        6,
+        8
+      ]
+    },
+    {
+      "id": "pipelines",
+      "group": "Backend & Portale",
+      "label": "Vertriebs- & Bearbeitungsstrecken",
+      "unit": "Strecken",
+      "description": "Definierte Statusfolgen für Interessenten, Kunden oder Aufträge.",
+      "quantities": [
+        0,
+        0,
+        0,
+        1,
+        2,
+        4,
+        6,
+        8,
+        12
+      ]
+    },
+    {
+      "id": "dashboards",
+      "group": "Backend & Portale",
+      "label": "Kennzahlen-Dashboards",
+      "unit": "Ansichten",
+      "description": "Abgestimmte Übersichten mit Kennzahlen aus den angeschlossenen Daten.",
+      "quantities": [
+        0,
+        0,
+        0,
+        1,
+        2,
+        3,
+        5,
+        8,
+        12
+      ]
+    },
+    {
+      "id": "approvals",
+      "group": "Backend & Portale",
+      "label": "Freigabeprozesse",
+      "unit": "Prozesse",
+      "description": "Zuständigkeiten und Freigaben für Dokumente, Aufgaben oder interne Vorgänge.",
+      "quantities": [
+        0,
+        0,
+        0,
+        1,
+        2,
+        3,
+        5,
+        8,
+        12
+      ]
+    },
+    {
+      "id": "finance_exports",
+      "group": "Finance & Abrechnung",
+      "label": "Buchhaltungs- & Datenexporte",
+      "unit": "Exportformate",
+      "description": "Abgestimmte Formate zur Übergabe von Rechnungs- oder Geschäftsdaten.",
+      "quantities": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        2,
+        3,
+        4,
+        6
+      ]
+    },
+    {
+      "id": "payment_flows",
+      "group": "Finance & Abrechnung",
+      "label": "Zahlungsanbindungen",
+      "unit": "Anbindungen",
+      "description": "Technische Anbindung eines abgestimmten Zahlungsablaufs; Transaktionsgebühren separat.",
+      "quantities": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "invoice_templates",
+      "group": "Finance & Abrechnung",
+      "label": "Angebots- & Rechnungsvorlagen",
+      "unit": "Vorlagen",
+      "description": "Gestaltete Belegvorlagen mit abgestimmten Feldern und Nummernkreisen.",
+      "quantities": [
+        0,
+        0,
+        0,
+        0,
+        2,
+        3,
+        4,
+        6,
+        8
+      ]
+    },
+    {
+      "id": "finance_roles",
+      "group": "Finance & Abrechnung",
+      "label": "Freigaben im Finance-Portal",
+      "unit": "Abläufe",
+      "description": "Abgestimmte Rollen und Prüfabläufe für Belege und Abrechnung.",
+      "quantities": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        2,
+        3,
+        4,
+        6
+      ]
+    },
+    {
+      "id": "notifications",
+      "group": "Automatisierung & KI",
+      "label": "E-Mail- & Systembenachrichtigungen",
+      "unit": "Vorlagen",
+      "description": "Abgestimmte Auslöser und Textvorlagen. Versand- und Anbietergebühren separat.",
+      "quantities": [
+        0,
+        0,
+        1,
+        3,
+        6,
+        10,
+        15,
+        20,
+        30
+      ]
+    },
+    {
+      "id": "ai_sources",
+      "group": "Automatisierung & KI",
+      "label": "Wissensquellen für KI-Agenten",
+      "unit": "Quellen",
+      "description": "Definierte Dokumentensammlungen oder Datenquellen. Umfang und Aktualisierung werden abgestimmt.",
+      "quantities": [
+        0,
+        0,
+        0,
+        1,
+        3,
+        5,
+        10,
+        20,
+        30
+      ]
+    },
+    {
+      "id": "handover",
+      "group": "Zusammenarbeit & Qualität",
+      "label": "Einweisung & Übergabe",
+      "unit": "Termine",
+      "description": "Je Termin bis zu 45 Minuten Einweisung zu den vereinbarten Systemen.",
+      "quantities": [
+        1,
+        1,
+        1,
+        2,
+        3,
+        4,
+        5,
+        8,
+        10
+      ]
+    },
+    {
+      "id": "accessibility",
+      "group": "Zusammenarbeit & Qualität",
+      "label": "Prüfung der Bedienbarkeit",
+      "unit": "Prüfdurchläufe",
+      "description": "Tastaturbedienung, Kontraste und Formularbeschriftungen im vereinbarten Umfang.",
+      "quantities": [
+        1,
+        1,
+        1,
+        2,
+        2,
+        3,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "performance",
+      "group": "Zusammenarbeit & Qualität",
+      "label": "Ladezeit- & Darstellungschecks",
+      "unit": "Prüfdurchläufe",
+      "description": "Kontrolle und Optimierung der vereinbarten Seiten und Hauptabläufe.",
+      "quantities": [
+        1,
+        1,
+        1,
+        2,
+        2,
+        3,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "care_reports",
+      "group": "Monatliche Betreuung",
+      "label": "Betreuungs- & Leistungsauszüge",
+      "unit": "Auszüge",
+      "description": "Übersicht der dokumentierten Arbeiten und verbrauchten Zeitkontingente pro Monat.",
+      "quantities": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "care_reviews",
+      "group": "Monatliche Betreuung",
+      "label": "Entwicklungsgespräche pro Monat",
+      "unit": "Termine",
+      "description": "Je Termin bis zu 30 Minuten; auf das monatliche Zeitkontingent angerechnet.",
+      "quantities": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        2,
+        2,
+        3,
+        4
+      ]
     }
-  ]
+  ],
+  "monthlyPricing": "commercial"
 }
