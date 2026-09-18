@@ -1599,22 +1599,258 @@
 }
 
 /* Project correction rounds: shared controls for timers, backfills and reports. */
-.workspace .correction-fields {display:grid;grid-template-columns:minmax(180px,1fr) minmax(100px,160px);gap:16px;align-items:end;margin:16px 0;}
-.workspace .correction-fields label {min-width:0;}
-.workspace .correction-hint {grid-column:1/-1;font-size:12px;line-height:1.6;color:var(--muted);margin:0;}
-.workspace .correction-label {color:#d9b775;line-height:1.5;margin-top:6px;}
-.workspace .correction-settings,.workspace .correction-assignment {border-top:1px solid rgba(174,136,76,.2);padding-top:14px;margin:16px 0;}
-.workspace .correction-settings summary,.workspace .correction-assignment summary {color:#d9b775;cursor:pointer;font-size:12px;font-weight:600;}
-.workspace .correction-settings form,.workspace .correction-assignment form {display:grid;gap:12px;margin-top:16px;}
-.workspace .correction-settings form p {margin:0;}
-.workspace .correction-assignment {min-width:230px;}
-.workspace .correction-assignment .correction-fields {grid-template-columns:1fr;margin:0;}
-.workspace .correction-overview {margin:24px 0;padding:20px;border:1px solid rgba(174,136,76,.25);border-radius:12px;background:rgba(174,136,76,.035);}
-.workspace .correction-overview h3 {font-size:16px;margin:0 0 16px;}
-@media(max-width:600px){.workspace .correction-fields {grid-template-columns:1fr;}.workspace .correction-overview{padding:14px;}}
-.workspace .change-request-button {align-self:end;min-height:44px;}
-.workspace .change-request-button.active {background:rgba(174,136,76,.18);border-color:#ae884c;color:#ecd6a3;}
-.workspace .change-request-field {grid-column:1/-1;}
-.workspace .change-request-field textarea {min-height:110px;}
-.workspace .change-request-note {white-space:pre-wrap;overflow-wrap:anywhere;border-left:2px solid #ae884c;padding-left:10px;margin-top:10px;font-size:12px;line-height:1.6;color:#c6cfd4;}
-.workspace .change-request-overview {border-color:rgba(174,136,76,.5);}
+.workspace .correction-fields {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(100px, 160px);
+  gap: 16px;
+  align-items: end;
+  margin: 16px 0;
+}
+.workspace .correction-fields label {
+  min-width: 0;
+}
+.workspace .correction-hint {
+  grid-column: 1/-1;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 0;
+}
+.workspace .correction-label {
+  color: #d9b775;
+  line-height: 1.5;
+  margin-top: 6px;
+}
+.workspace .correction-settings,
+.workspace .correction-assignment {
+  border-top: 1px solid rgba(174, 136, 76, 0.2);
+  padding-top: 14px;
+  margin: 16px 0;
+}
+.workspace .correction-settings summary,
+.workspace .correction-assignment summary {
+  color: #d9b775;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+.workspace .correction-settings form,
+.workspace .correction-assignment form {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+.workspace .correction-settings form p {
+  margin: 0;
+}
+.workspace .correction-assignment {
+  min-width: 230px;
+}
+.workspace .correction-assignment .correction-fields {
+  grid-template-columns: 1fr;
+  margin: 0;
+}
+.workspace .correction-overview {
+  margin: 24px 0;
+  padding: 20px;
+  border: 1px solid rgba(174, 136, 76, 0.25);
+  border-radius: 12px;
+  background: rgba(174, 136, 76, 0.035);
+}
+.workspace .correction-overview h3 {
+  font-size: 16px;
+  margin: 0 0 16px;
+}
+@media (max-width: 600px) {
+  .workspace .correction-fields {
+    grid-template-columns: 1fr;
+  }
+  .workspace .correction-overview {
+    padding: 14px;
+  }
+}
+.workspace .change-request-button {
+  align-self: end;
+  min-height: 44px;
+}
+.workspace .change-request-button.active {
+  background: rgba(174, 136, 76, 0.18);
+  border-color: #ae884c;
+  color: #ecd6a3;
+}
+.workspace .change-request-field {
+  grid-column: 1/-1;
+}
+.workspace .change-request-field textarea {
+  min-height: 110px;
+}
+.workspace .change-request-note {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  border-left: 2px solid #ae884c;
+  padding-left: 10px;
+  margin-top: 10px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #c6cfd4;
+}
+.workspace .change-request-overview {
+  border-color: rgba(174, 136, 76, 0.5);
+}
+
+/* Shared time correction dialog, including customer-profile entry points. */
+.time-edit-button {
+  margin-top: 0.65rem;
+}
+.time-edit-locked {
+  display: block;
+  color: #a8b3c0;
+  margin-top: 0.65rem;
+}
+.time-edit-dialog {
+  width: min(720px, calc(100vw - 32px));
+  max-height: calc(100dvh - 40px);
+  margin: auto;
+  padding: 28px;
+  overflow-y: auto;
+  border: 1px solid #ae884c80;
+  border-radius: 20px;
+  background: #0d151d;
+  color: #f1f4f6;
+  box-shadow: 0 24px 100px #000a;
+  font-family: "NEX UI", Arial, sans-serif;
+}
+.time-edit-dialog::backdrop {
+  background: #03080dce;
+  backdrop-filter: blur(5px);
+}
+.time-edit-dialog header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.time-edit-dialog h2 {
+  font-family: "NEX Display", "NEX UI", sans-serif;
+  font-size: clamp(24px, 4vw, 32px);
+  letter-spacing: -0.03em;
+  margin: 6px 0 0;
+}
+.time-edit-dialog .eyebrow {
+  margin: 0;
+  color: #dcc38c;
+  font-size: 11px;
+}
+.time-edit-dialog fieldset {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  margin: 20px 0;
+}
+.time-edit-dialog label {
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.time-edit-dialog input,
+.time-edit-dialog select,
+.time-edit-dialog textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #34414e;
+  border-radius: 9px;
+  background: #080f16;
+  color: #f1f4f6;
+  font: inherit;
+  color-scheme: dark;
+}
+.time-edit-dialog textarea {
+  min-height: 82px;
+  resize: vertical;
+}
+.time-edit-dialog :is(input, select, textarea):focus-visible {
+  outline: 2px solid #ae884c;
+  outline-offset: 2px;
+}
+.time-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.time-edit-duration {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid #ae884c50;
+  background: #ae884c0e;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 13px;
+}
+.time-edit-duration strong {
+  color: #e6ca88;
+  font-variant-numeric: tabular-nums;
+}
+.time-edit-note {
+  color: #aebbc8;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.time-edit-notice {
+  padding: 12px 14px;
+  border-left: 3px solid #ae884c;
+  color: #ebd7af;
+  background: #ae884c14;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.time-edit-error {
+  padding: 12px;
+  color: #ffc5bd;
+  background: #682f2f45;
+  border-radius: 8px;
+  font-size: 14px;
+}
+.time-edit-dialog footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  border-top: 1px solid #ffffff16;
+  padding-top: 20px;
+}
+.time-edit-dialog .correction-fields {
+  display: grid;
+  gap: 12px;
+}
+.time-edit-dialog .correction-hint {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #b7c3ce;
+}
+.time-edit-dialog .icon-button {
+  color: #f1f4f6;
+  background: transparent;
+  border: 1px solid #ffffff25;
+  border-radius: 8px;
+  padding: 8px;
+}
+@media (max-width: 600px) {
+  .time-edit-dialog {
+    padding: 20px;
+  }
+  .time-edit-grid {
+    grid-template-columns: 1fr;
+  }
+  .time-edit-dialog footer {
+    flex-wrap: wrap;
+  }
+  .time-edit-dialog footer .button {
+    flex: 1 1 auto;
+  }
+}

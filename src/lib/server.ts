@@ -76,14 +76,33 @@ export async function snapshot() {
       for (let offset = 0; ; offset += 1000) {
         const r = await client
           .from("nc_" + n)
-          .select("*")
+          .select(
+            n === "time_entries"
+              ? "*,invoice_links:nc_invoice_times(time_id)"
+              : "*",
+          )
           .order(n === "time_entries" ? "started_at" : "created_at", {
             ascending: false,
           })
           .order("id")
           .range(offset, offset + 999);
         if (r.error) return r;
-        rows.push(...r.data);
+        rows.push(
+          ...(n === "time_entries"
+            ? r.data.map((row) => {
+                const { invoice_links, ...entry } = row as unknown as Record<
+                  string,
+                  unknown
+                >;
+                return {
+                  ...entry,
+                  invoiced: Array.isArray(invoice_links)
+                    ? invoice_links.length > 0
+                    : Boolean(invoice_links),
+                };
+              })
+            : r.data),
+        );
         if (r.data.length < 1000) return { data: rows, error: null };
       }
     }),

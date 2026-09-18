@@ -1,4 +1,5 @@
 "use client";
+import TimeEntryEditor from "./time-entry-editor";
 import { withLoading, beginLoading } from "@/lib/loading-state";
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "./app-link";
@@ -11,7 +12,6 @@ import ProjectOffer from "./project-offer";
 import {
   CorrectionFields,
   CorrectionProjectSettings,
-  CorrectionAssignment,
 } from "./correction-rounds";
 import {
   assignmentLabel,
@@ -74,6 +74,8 @@ type Time = {
   change_round?: number | null;
   extra_work?: string | null;
   approved_rate_cents?: number | null;
+  version?: number;
+  invoiced?: boolean;
 };
 type Task = { id: string; project_id: string; title: string; done: boolean };
 type Subscription = {
@@ -373,7 +375,11 @@ export default function Workspace({ initial }: { initial: unknown }) {
   const monthTimes = data.time_entries.filter(
     (t) => reportSeconds(t, monthWindow) > 0,
   );
-  async function mutate(action: string, payload: Record<string, unknown>) {
+  async function mutate(
+    action: string,
+    payload: Record<string, unknown>,
+    onError?: (message: string) => void,
+  ) {
     if (busy) return false;
     setBusy(true);
     setError("");
@@ -392,11 +398,12 @@ export default function Workspace({ initial }: { initial: unknown }) {
       setNotice("Gespeichert.");
       return true;
     } catch (e) {
-      setError(
+      const message =
         e instanceof Error
           ? e.message
-          : "Nicht gespeichert. Bitte erneut versuchen.",
-      );
+          : "Nicht gespeichert. Bitte erneut versuchen.";
+      setError(message);
+      onError?.(message);
       return false;
     } finally {
       setBusy(false);
@@ -1220,18 +1227,9 @@ export default function Workspace({ initial }: { initial: unknown }) {
                                     {t.change_request}
                                   </small>
                                 )}
-                                <CorrectionAssignment
-                                  key={
-                                    t.id +
-                                    String(t.correction_round) +
-                                    String(t.change_request) +
-                                    String(t.change_round) +
-                                    String(t.extra_work)
-                                  }
+                                <TimeEntryEditor
                                   entry={t}
-                                  project={data.projects.find(
-                                    (p) => p.id === t.project_id,
-                                  )}
+                                  projects={data.projects}
                                   times={data.time_entries}
                                   mutate={mutate}
                                   busy={busy}

@@ -2,6 +2,7 @@ import { readOfferCatalog } from "@/lib/offer-server";
 import { offerSelectionSchema } from "@/lib/offer-schema";
 import { calculateOffer, offerQuantity } from "@/lib/offer-catalog";
 import { NextResponse } from "next/server";
+import { timeEditSchema } from "@/lib/time-edit-schema";
 import { timeAssignmentSchema } from "@/lib/time-assignment-schema";
 import { z } from "zod";
 import { admin, db, sameOrigin, snapshot } from "@/lib/server";
@@ -156,6 +157,27 @@ export async function POST(request: Request) {
         });
         break;
       }
+      case "time_edit": {
+        const p = timeEditSchema.parse(payload);
+        const assignment = timeAssignmentSchema.parse(payload);
+        result = await client.rpc("nc_edit_time", {
+          p_user: user.id,
+          p_entry: p.id,
+          p_version: p.version,
+          p_project: p.project_id,
+          p_kind: p.kind,
+          p_category: p.category,
+          p_description: p.description,
+          p_start: p.started_at,
+          p_stop: p.stopped_at,
+          p_reason: p.reason,
+          p_correction_round: assignment.correction_round,
+          p_change_request: assignment.change_request,
+          p_change_round: assignment.change_round,
+          p_extra_work: assignment.extra_work,
+        });
+        break;
+      }
       case "time_manual": {
         const assignment = timeAssignmentSchema.parse(payload);
         const p = z
@@ -303,22 +325,20 @@ export async function POST(request: Request) {
             "Bitte zuerst den Projektumfang samt Betreuung vereinbaren.",
           );
         const quote = r.data.offer_snapshot;
-        result = await client
-          .from("nc_subscriptions")
-          .insert({
-            project_id: p.project_id,
-            starts_on: p.starts_on,
-            plan:
-              quote.package === "Basic"
-                ? "Care"
-                : quote.package === "Business"
-                  ? "Care Plus"
-                  : "Care Dedicated",
-            monthly_cents: quote.monthly_cents,
-            included_minutes: offerQuantity(quote, "care_minutes"),
-            offer_snapshot: quote,
-            included_requests: offerQuantity(quote, "care_requests"),
-          });
+        result = await client.from("nc_subscriptions").insert({
+          project_id: p.project_id,
+          starts_on: p.starts_on,
+          plan:
+            quote.package === "Basic"
+              ? "Care"
+              : quote.package === "Business"
+                ? "Care Plus"
+                : "Care Dedicated",
+          monthly_cents: quote.monthly_cents,
+          included_minutes: offerQuantity(quote, "care_minutes"),
+          offer_snapshot: quote,
+          included_requests: offerQuantity(quote, "care_requests"),
+        });
         break;
       }
       case "subscription_end": {

@@ -1,14 +1,12 @@
 "use client";
+import TimeEntryEditor from "./time-entry-editor";
 import { extraAmount } from "@/lib/time-report";
 import Link from "./app-link";
 import { useState } from "react";
 import ProjectOffer from "./project-offer";
 import type { OfferQuote } from "@/lib/offer-catalog";
 import CustomerFields from "./customer-fields";
-import {
-  CorrectionProjectSettings,
-  CorrectionAssignment,
-} from "./correction-rounds";
+import { CorrectionProjectSettings } from "./correction-rounds";
 import {
   correctionLabel,
   assignmentLabel,
@@ -326,16 +324,9 @@ export function TimeReport({
                     </p>
                   )}
                   {mutate && (
-                    <CorrectionAssignment
-                      key={
-                        t.id +
-                        String(t.correction_round) +
-                        String(t.change_request) +
-                        String(t.change_round) +
-                        String(t.extra_work)
-                      }
+                    <TimeEntryEditor
                       entry={t}
-                      project={projects.find((p) => p.id === t.project_id)}
+                      projects={projects}
                       times={times}
                       mutate={mutate}
                       busy={busy}
