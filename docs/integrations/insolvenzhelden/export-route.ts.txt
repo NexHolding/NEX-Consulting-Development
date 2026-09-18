@@ -1,0 +1,102 @@
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { authorized, mapAccounting } from "@/lib/accounting/nex-export.mjs";
+export const maxDuration = 60;
+export async function GET(request: Request) {
+  const headers = {
+    "Cache-Control": "private, no-store",
+    "X-Content-Type-Options": "nosniff",
+  };
+  if (!authorized(request, process.env.NEX_ACCOUNTING_TOKEN))
+    return Response.json({ error: "Unauthorized" }, { status: 401, headers });
+  try {
+    const db = getSupabaseAdmin();
+    if (!db) throw Error("Not configured");
+    const entity = await db
+      .from("ih_accounting_entities")
+      .select("id")
+      .eq("code", "next_consulting_kg")
+      .single();
+    if (entity.error || !entity.data) throw Error("Entity not configured");
+    const brand = await db
+      .from("ih_accounting_brands")
+      .select("id")
+      .eq("entity_id", entity.data.id)
+      .eq("code", "insolvenzhelden")
+      .single();
+    if (brand.error || !brand.data) throw Error("Brand not configured");
+    const results = await Promise.all([
+      db
+        .from("ih_accounting_workspace_documents")
+        .select(
+          "id,original_file_name,content_type,size_bytes,storage_key,document_kind,document_date,created_at,booking_date,booking_text,invoice_number,booking_reference,counterparty_name,net_cents,tax_cents,gross_cents,currency,due_date,paid_at,payment_status,debit_account_skr04,credit_account_skr04,tax_account_skr04,booking_status,notes,category:ih_accounting_categories(name),cost_center:ih_cost_centers(name)",
+        )
+        .eq("entity_id", entity.data.id)
+        .eq("brand_id", brand.data.id)
+        .order("id")
+        .limit(501),
+      db
+        .from("ih_accounting_assets")
+        .select(
+          "id,document_id,asset_number,name,acquisition_date,in_service_date,acquisition_cost_cents,residual_value_cents,depreciation_method,useful_life_months,depreciation_account_skr04,accumulated_depreciation_account_skr04,status",
+        )
+        .eq("entity_id", entity.data.id)
+        .eq("brand_id", brand.data.id)
+        .order("id")
+        .limit(501),
+      db
+        .from("ih_payroll_preparations")
+        .select(
+          "id,period_month,employee_number,gross_cents,employer_social_security_cents,net_cents,status,run_type,version,is_current",
+        )
+        .eq("entity_id", entity.data.id)
+        .eq("brand_id", brand.data.id)
+        .eq("is_current", true)
+        .neq("run_type", "preview")
+        .order("id")
+        .limit(501),
+      db
+        .from("ih_bank_transactions")
+        .select(
+          "id,provider_transaction_id,provider_account_id,transaction_state,completed_at,created_at,direction,amount_cents,currency,counterparty_name,payer_display,payment_reference,match_status",
+        )
+        .order("id")
+        .limit(501),
+    ]);
+    if (results.some((r) => r.error)) throw Error("Source query failed");
+    const [documents, assets, payroll, bank] = results.map((r) => r.data || []);
+    const dep = assets.length
+      ? await db
+          .from("ih_accounting_depreciation_entries")
+          .select(
+            "id,asset_id,period_month,amount_cents,status,booking_reference",
+          )
+          .in(
+            "asset_id",
+            assets.map((a) => String(a.id)),
+          )
+          .order("id")
+          .limit(501)
+      : { data: [], error: null };
+    if (dep.error) throw Error("Depreciation query failed");
+    const payload = mapAccounting({
+      documents,
+      assets,
+      payroll,
+      bank,
+      depreciation: dep.data || [],
+    });
+    const body = JSON.stringify(payload);
+    if (body.length > 2500000) throw Error("Source export too large");
+    return new Response(body, {
+      headers: { ...headers, "Content-Type": "application/json" },
+    });
+  } catch {
+    return Response.json(
+      {
+        error:
+          "Buchhaltungsexport nicht verfügbar. Datenstand, EUR-Währung und Exportgrenze (500 Datensätze) prüfen.",
+      },
+      { status: 503, headers },
+    );
+  }
+}

@@ -1,0 +1,38 @@
+import { z } from "zod";
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { authorized } from "@/lib/accounting/nex-export.mjs";
+export async function GET(request: Request) {
+  const headers = {
+    "Cache-Control": "private, no-store",
+    "X-Content-Type-Options": "nosniff",
+  };
+  if (!authorized(request, process.env.NEX_ACCOUNTING_TOKEN))
+    return Response.json({ error: "Unauthorized" }, { status: 401, headers });
+  try {
+    const id = z.uuid().parse(new URL(request.url).searchParams.get("id"));
+    const db = getSupabaseAdmin();
+    if (!db) throw Error();
+    const r = await db
+      .from("ih_accounting_workspace_documents")
+      .select(
+        "storage_bucket,storage_key,original_file_name,entity:ih_accounting_entities!inner(code),brand:ih_accounting_brands!inner(code)",
+      )
+      .eq("id", id)
+      .eq("entity.code", "next_consulting_kg")
+      .eq("brand.code", "insolvenzhelden")
+      .single();
+    if (r.error || !r.data?.storage_key) throw Error();
+    const signed = await db.storage
+      .from(r.data.storage_bucket)
+      .createSignedUrl(r.data.storage_key, 60, {
+        download: r.data.original_file_name,
+      });
+    if (signed.error || !signed.data) throw Error();
+    return Response.json({ url: signed.data.signedUrl }, { headers });
+  } catch {
+    return Response.json(
+      { error: "Beleg nicht verfügbar." },
+      { status: 404, headers },
+    );
+  }
+}

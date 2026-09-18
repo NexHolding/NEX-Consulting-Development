@@ -3,7 +3,13 @@
     {
       "path": "/api/billing",
       "schedule": "15 5 * * *"
+    },
+    {
+      "path": "/api/finance/sync",
+      "schedule": "45 5 * * *"
     }
   ],
-  "regions": ["fra1"]
+  "regions": [
+    "fra1"
+  ]
 }

@@ -5,6 +5,7 @@ import "./globals.css";
 import "./reference-design.css";
 import "./brand.css";
 import "./crm-design.css";
+import "./finance.css";
 import "./loading-design.css";
 import "./offer-design.css";
 import { GlobalLoading } from "@/components/brand-loading";

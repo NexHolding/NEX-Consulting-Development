@@ -623,13 +623,11 @@ export default function Workspace({ initial }: { initial: unknown }) {
               aria-current={mainArea === label ? "page" : undefined}
               key={label}
               onClick={() => {
-                navigate(
-                  label === "Finanzen"
-                    ? "Rechnungen"
-                    : label === "Interessenten"
-                      ? "Anfragen"
-                      : label,
-                );
+                if (label === "Finanzen") {
+                  router.push("/crm/finance");
+                  return;
+                }
+                navigate(label === "Interessenten" ? "Anfragen" : label);
                 setMobile(false);
                 setSearch("");
                 setError("");
