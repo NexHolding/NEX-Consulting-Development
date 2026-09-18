@@ -3,9 +3,14 @@ import TimeEntryEditor from "./time-entry-editor";
 import { withLoading, beginLoading } from "@/lib/loading-state";
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "./app-link";
-import { Brand } from "./brand";
 import TimerCard from "./timer-card";
-import CatalogAdmin from "./catalog-admin";
+import WorkspaceSettings from "./workspace-settings";
+import { settingsSections, workspaceView } from "@/lib/workspace-navigation";
+import {
+  WorkspaceNavigation,
+  SectionNavigation,
+  financeNavigation,
+} from "./workspace-navigation";
 import { OfferSummary } from "./offer-configurator";
 import type { OfferQuote } from "@/lib/offer-catalog";
 import ProjectOffer from "./project-offer";
@@ -27,23 +32,15 @@ import CustomerProfile, {
 import { reportSeconds, reportWindow } from "@/lib/time-report";
 import { useRouter } from "next/navigation";
 import {
-  LayoutDashboard,
-  Users,
   FolderKanban,
   Clock3,
-  CheckSquare,
-  Receipt,
-  Repeat2,
-  Inbox,
   Settings,
-  LogOut,
   Plus,
   ArrowUpRight,
   Search,
   X,
   Check,
   RefreshCw,
-  Menu,
 } from "lucide-react";
 type Project = {
   id: string;
@@ -191,11 +188,17 @@ function Empty({
     </div>
   );
 }
-export default function Workspace({ initial }: { initial: unknown }) {
+export default function Workspace({
+  initial,
+  initialView = workspaceView({}),
+}: {
+  initial: unknown;
+  initialView?: ReturnType<typeof workspaceView>;
+}) {
   const [data, setData] = useState(initial as Data);
-  const [tab, setTab] = useState("Dashboard");
-  const [customerId, setCustomerId] = useState("");
-  const [section, setSection] = useState("Übersicht");
+  const [tab, setTab] = useState(initialView.tab);
+  const [customerId, setCustomerId] = useState(initialView.customer);
+  const [section, setSection] = useState(initialView.section);
   const [selected, setSelected] = useState("");
   const [search, setSearch] = useState("");
   const [modal, setModal] = useState("");
@@ -217,19 +220,12 @@ export default function Workspace({ initial }: { initial: unknown }) {
   const [mobile, setMobile] = useState(false);
   const router = useRouter();
   useEffect(() => {
-    if (!mobile) return;
-    const close = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMobile(false);
-    };
-    window.addEventListener("keydown", close);
-    return () => window.removeEventListener("keydown", close);
-  }, [mobile]);
-  useEffect(() => {
     function restore() {
       const q = new URLSearchParams(window.location.search);
-      setTab(q.get("tab") || "Dashboard");
-      setCustomerId(q.get("customer") || "");
-      setSection(q.get("section") || "Übersicht");
+      const restored = workspaceView(Object.fromEntries(q));
+      setTab(restored.tab);
+      setCustomerId(restored.customer);
+      setSection(restored.section);
     }
     restore();
     window.addEventListener("popstate", restore);
@@ -243,7 +239,11 @@ export default function Workspace({ initial }: { initial: unknown }) {
     setMobile(false);
     const q = new URLSearchParams({
       tab: nextTab,
-      ...(customer ? { customer, section: nextSection } : {}),
+      ...(customer
+        ? { customer, section: nextSection }
+        : nextTab === "Einstellungen"
+          ? { section: nextSection }
+          : {}),
     });
     window.history.pushState(null, "", "/crm?" + q);
   }
@@ -255,14 +255,6 @@ export default function Workspace({ initial }: { initial: unknown }) {
       : tab === "Anfragen"
         ? "Interessenten"
         : tab;
-  const mainNav = [
-    ["Dashboard", LayoutDashboard],
-    ["Kunden", Users],
-    ["Interessenten", Inbox],
-    ["Projekte", FolderKanban],
-    ["Finanzen", Receipt],
-    ["Einstellungen", Settings],
-  ] as const;
   const secondaryItems =
     customer && tab === "Kunden"
       ? [
@@ -277,19 +269,14 @@ export default function Workspace({ initial }: { initial: unknown }) {
       : mainArea === "Projekte"
         ? ["Projekte", "Zeiterfassung", "Aufgaben"]
         : mainArea === "Finanzen"
-          ? ["Rechnungen", "Betreuung"]
+          ? ["Buchhaltung", "Rechnungen", "Betreuung"]
           : mainArea === "Interessenten"
             ? ["Anfragen"]
             : mainArea === "Kunden"
               ? ["Kunden"]
-              : [
-                  "Dashboard",
-                  "Kunden",
-                  "Anfragen",
-                  "Projekte",
-                  "Zeiterfassung",
-                  "Rechnungen",
-                ];
+              : mainArea === "Einstellungen"
+                ? settingsSections
+                : ["Dashboard"];
   const modalRef = useRef<HTMLElement>(null);
   useEffect(() => {
     if (!modal) return;
@@ -592,148 +579,117 @@ export default function Workspace({ initial }: { initial: unknown }) {
     </section>
   );
   return (
-    <div className="workspace">
-      {mobile && (
-        <button
-          className="crm-nav-scrim"
-          aria-label="Navigation schließen"
-          onClick={() => setMobile(false)}
+    <div
+      className={
+        "workspace " +
+        (secondaryItems.length <= 1 ? "workspace-without-subnav" : "")
+      }
+    >
+      <WorkspaceNavigation
+        active={mainArea}
+        user={data.user}
+        mobile={mobile}
+        onMobileChange={setMobile}
+        leadCount={data.leads.filter((l) => l.status === "Neu").length}
+        onNavigate={(label) => {
+          if (label === "Finanzen") router.push("/crm/finance");
+          else navigate(label === "Interessenten" ? "Anfragen" : label);
+          setError("");
+        }}
+      />
+      {secondaryItems.length > 1 && (
+        <SectionNavigation
+          title={customer && tab === "Kunden" ? customer.name : mainArea}
+          eyebrow={customer && tab === "Kunden" ? "Kundenakte" : "Bereiche"}
+          active={
+            mainArea === "Finanzen"
+              ? tab === "Rechnungen"
+                ? "invoices"
+                : "care"
+              : (customer && tab === "Kunden") || tab === "Einstellungen"
+                ? section
+                : tab
+          }
+          back={
+            customer && tab === "Kunden"
+              ? {
+                  label: "Alle Kunden",
+                  href: "/crm?tab=Kunden",
+                  onClick: () => navigate("Kunden"),
+                }
+              : undefined
+          }
+          items={
+            mainArea === "Finanzen"
+              ? financeNavigation
+              : secondaryItems.map((item) => ({
+                  id: item,
+                  label:
+                    item === "Anfragen" ? "Interessenten & Anfragen" : item,
+                  href:
+                    item === "Buchhaltung"
+                      ? "/crm/finance"
+                      : "/crm?" +
+                        new URLSearchParams(
+                          customer && tab === "Kunden"
+                            ? {
+                                tab: "Kunden",
+                                customer: customer.id,
+                                section: item,
+                              }
+                            : tab === "Einstellungen"
+                              ? { tab: "Einstellungen", section: item }
+                              : { tab: item },
+                        ),
+                  description: (
+                    {
+                      Übersicht: "Überblick und nächste Schritte",
+                      Stammdaten: "Kontakt und Anschrift",
+                      Rechnungsdaten: "Empfänger und Zahlungsziel",
+                      "Zugänge & Infrastruktur":
+                        "Passwörter, Domains und E-Mail",
+                      Projekte: "Projektstand und Leistungen",
+                      "Zeiten & Auszüge": "Zeitnachweise und Monats-PDF",
+                      Rechnungen: "Kundenrechnungen",
+                      Betreuung: "Wiederkehrende Leistungen",
+                      Buchhaltung: "Belege, Banken und Markenergebnis",
+                      Zeiterfassung: "Timer und Zeitnachweise",
+                      Aufgaben: "Nächste Schritte",
+                      "Preise & Pakete": "Budgets und monatliche Betreuung",
+                      Leistungen: "Katalog nach Kategorien",
+                      "Mein Zugang": "Ihr angemeldetes Konto",
+                    } as Record<string, string>
+                  )[item],
+                }))
+          }
+          onSelect={(item) =>
+            mainArea === "Finanzen"
+              ? item === "invoices"
+                ? navigate("Rechnungen")
+                : item === "care"
+                  ? navigate("Betreuung")
+                  : router.push("/crm/finance/" + item)
+              : item === "Buchhaltung"
+                ? router.push("/crm/finance")
+                : customer && tab === "Kunden"
+                  ? navigate("Kunden", customer.id, item)
+                  : tab === "Einstellungen"
+                    ? navigate("Einstellungen", "", item)
+                    : navigate(item)
+          }
         />
       )}
-      <aside
-        id="crm-main-navigation"
-        className={"sidebar " + (mobile ? "visible" : "")}
-      >
-        <button
-          className="icon-button crm-nav-close"
-          aria-label="Menü schließen"
-          onClick={() => setMobile(false)}
-        >
-          <X size={18} />
-        </button>
-        <Brand />
-        <Link className="button small" href="/crm/portal">
-          Kundenportal verwalten
-        </Link>
-        <p className="sidebar-label">ARBEITSBEREICH</p>
-        <nav aria-label="Hauptnavigation">
-          {mainNav.map(([label, Icon]) => (
-            <button
-              className={mainArea === label ? "active" : ""}
-              aria-current={mainArea === label ? "page" : undefined}
-              key={label}
-              onClick={() => {
-                if (label === "Finanzen") {
-                  router.push("/crm/finance");
-                  return;
-                }
-                navigate(label === "Interessenten" ? "Anfragen" : label);
-                setMobile(false);
-                setSearch("");
-                setError("");
-              }}
-            >
-              <Icon size={18} />
-              {label}
-              {label === "Interessenten" &&
-                data.leads.filter((l) => l.status === "Neu").length > 0 && (
-                  <span className="nav-count">
-                    {data.leads.filter((l) => l.status === "Neu").length}
-                  </span>
-                )}
-            </button>
-          ))}
-        </nav>
-        <div className="sidebar-bottom">
-          <div className="avatar">GA</div>
-          <div>
-            <strong>{data.user.username}</strong>
-            <small>Global Administrator</small>
-          </div>
-          <button
-            className="icon-button"
-            aria-label="Abmelden"
-            onClick={async () => {
-              await withLoading(() => fetch("/api/auth", { method: "DELETE" }));
-              router.replace("/login");
-              router.refresh();
-            }}
-          >
-            <LogOut size={17} />
-          </button>
-        </div>
-      </aside>
-      <aside className="secondary-sidebar">
-        <div className="secondary-heading">
-          <p className="eyebrow">
-            {customer && tab === "Kunden" ? "KUNDENAKTE" : "ARBEITSBEREICH"}
-          </p>
-          <h2>{customer && tab === "Kunden" ? customer.name : mainArea}</h2>
-        </div>
-        <nav aria-label="Zweite Navigation">
-          {customer && tab === "Kunden" && (
-            <button className="text-link" onClick={() => navigate("Kunden")}>
-              ← Alle Kunden
-            </button>
-          )}
-          {secondaryItems.map((item) => (
-            <button
-              key={item}
-              aria-current={
-                (customer && tab === "Kunden" ? section === item : tab === item)
-                  ? "page"
-                  : undefined
-              }
-              className={
-                (customer && tab === "Kunden" ? section === item : tab === item)
-                  ? "active"
-                  : ""
-              }
-              onClick={() =>
-                customer && tab === "Kunden"
-                  ? navigate("Kunden", customer.id, item)
-                  : navigate(item)
-              }
-            >
-              <strong>
-                {item === "Anfragen" ? "Interessenten & Anfragen" : item}
-              </strong>
-              <small>
-                {
-                  {
-                    Übersicht: "Kundenakte im Überblick",
-                    Stammdaten: "Kontakt, Anschrift und Notizen",
-                    Rechnungsdaten: "Empfänger und Zahlungsziel",
-                    "Zugänge & Infrastruktur": "Passwörter, Domains und E-Mail",
-                    Projekte: "Projektstand und Leistungen",
-                    "Zeiten & Auszüge": "Aktueller Stand und Monats-PDF",
-                    Rechnungen: "Belege und Abrechnung",
-                    Betreuung: "Wiederkehrende Leistungen",
-                    Kunden: "Zentrale Kundendatenbank",
-                    Anfragen: "Neue Kontakte und Verkaufsstatus",
-                    Zeiterfassung: "Timer, Nachträge und Auszüge",
-                    Aufgaben: "Nächste Schritte",
-                    Dashboard: "Kennzahlen und Überblick",
-                  }[item]
-                }
-              </small>
-            </button>
-          ))}
-        </nav>
-      </aside>
       <div className="workspace-main">
         <header className="workspace-header">
-          <button
-            className="icon-button mobile-only"
-            aria-label="Navigation"
-            aria-expanded={mobile}
-            aria-controls="crm-main-navigation"
-            onClick={() => setMobile(!mobile)}
-          >
-            <Menu />
-          </button>
           <div className="breadcrumbs">
-            Workspace <span>/</span> <strong>{tab}</strong>
+            {mainArea} <span>/</span>{" "}
+            <strong>
+              {tab === "Einstellungen" || (customer && tab === "Kunden")
+                ? section
+                : tab === "Anfragen"
+                  ? "Anfragen"
+                  : "Übersicht"}
+            </strong>
           </div>
           <span className="workspace-date">
             {new Date(now).toLocaleDateString("de-DE", {
@@ -753,20 +709,26 @@ export default function Workspace({ initial }: { initial: unknown }) {
               <h1>
                 {customer && tab === "Kunden"
                   ? section
-                  : tab === "Dashboard"
-                    ? "Ihr Unternehmen im Überblick"
-                    : tab === "Anfragen"
-                      ? "Interessenten & Anfragen"
-                      : tab}
+                  : tab === "Einstellungen"
+                    ? section === "Übersicht"
+                      ? "Einstellungen"
+                      : section
+                    : tab === "Dashboard"
+                      ? "Ihr Unternehmen im Überblick"
+                      : tab === "Anfragen"
+                        ? "Interessenten & Anfragen"
+                        : tab}
               </h1>
               <p>
-                {tab === "Dashboard"
-                  ? "Ihre Projekte, Kunden und nächsten Schritte. An einem Ort."
-                  : tab === "Zeiterfassung"
-                    ? "Interne Arbeit verstehen. Externe Leistungen nachvollziehbar erfassen."
-                    : tab === "Rechnungen"
-                      ? "Einmalige Projekte und monatliche Betreuung übersichtlich vorbereiten."
-                      : "Übersichtlich organisiert. Direkt in Ihrem Workspace."}
+                {tab === "Einstellungen"
+                  ? "Preise, Leistungen und Zugänge an einem Ort verwalten."
+                  : tab === "Dashboard"
+                    ? "Ihre Projekte, Kunden und nächsten Schritte. An einem Ort."
+                    : tab === "Zeiterfassung"
+                      ? "Interne Arbeit verstehen. Externe Leistungen nachvollziehbar erfassen."
+                      : tab === "Rechnungen"
+                        ? "Einmalige Projekte und monatliche Betreuung übersichtlich vorbereiten."
+                        : "Übersichtlich organisiert. Direkt in Ihrem Workspace."}
               </p>
             </div>
             <button
@@ -1574,41 +1536,12 @@ export default function Workspace({ initial }: { initial: unknown }) {
               )}
             </section>
           )}
-          {tab === "Einstellungen" && <CatalogAdmin />}
           {tab === "Einstellungen" && (
-            <section className="panel settings-panel">
-              <h2>Ihr Workspace</h2>
-              <dl>
-                <dt>Angemeldet als</dt>
-                <dd>{data.user.username} · Global Administrator</dd>
-                <dt>Datenbank</dt>
-                <dd>Supabase · separates NEX-Consulting-Projekt · Frankfurt</dd>
-                <dt>Anwendungszugriff</dt>
-                <dd>
-                  Serverseitige Anmeldung, geschützte Sitzungen, keine
-                  öffentlichen CRM-Tabellen
-                </dd>
-                <dt>Produktionsdomain</dt>
-                <dd>
-                  www.next-consulting.com · DNS-Verknüpfung noch ausstehend
-                </dd>
-                <dt>Abrechnung</dt>
-                <dd>
-                  Automatische Monatsentwürfe aktiv · produktiver Versand noch
-                  einzurichten
-                </dd>
-                <dt>Weitere Rollen und Kundenportal</dt>
-                <dd>
-                  Datenmodell vorbereitet. Aktuell ist ausschließlich der
-                  Global-Admin-Zugang freigeschaltet.
-                </dd>
-              </dl>
-              <p className="info-box">
-                Für die nächste Freischaltung benötigt: rechtlicher Betreiber,
-                Rechnungsanschrift, Steuerangaben und bestätigter
-                E-Mail-Absender.
-              </p>
-            </section>
+            <WorkspaceSettings
+              section={section}
+              username={data.user.username}
+              onSelect={(item) => navigate("Einstellungen", "", item)}
+            />
           )}
         </main>
         <footer className="workspace-footer">

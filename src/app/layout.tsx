@@ -8,6 +8,7 @@ import "./crm-design.css";
 import "./finance.css";
 import "./loading-design.css";
 import "./offer-design.css";
+import "./workspace-navigation.css";
 import { GlobalLoading } from "@/components/brand-loading";
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.next-consulting.com"),

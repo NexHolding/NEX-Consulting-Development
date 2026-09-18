@@ -1,7 +1,11 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Brand } from "@/components/brand";
+import {
+  WorkspaceNavigation,
+  SectionNavigation,
+  financeNavigation,
+} from "@/components/workspace-navigation";
 import {
   ArrowUpRight,
   Building2,
@@ -48,7 +52,15 @@ type Command = {
   action: "reverse" | "classify" | "match";
   record: FinanceRecord;
 };
-export default function FinanceHub({ view }: { view: string }) {
+export default function FinanceHub({
+  view,
+  settingsSection = "overview",
+  user,
+}: {
+  view: string;
+  settingsSection?: string;
+  user: { username: string };
+}) {
   const [data, setData] = useState<FinanceSnapshot | null>(null),
     [scope, setScope] = useState("nex"),
     [period, setPeriod] = useState(today().slice(0, 7)),
@@ -321,60 +333,19 @@ export default function FinanceHub({ view }: { view: string }) {
   }
   return (
     <div className="finance-shell workspace">
-      <aside className={"finance-sidebar " + (mobile ? "open" : "")}>
-        <button
-          className="finance-mobile-close button small"
-          onClick={() => setMobile(false)}
-          aria-label="Navigation schließen"
-        >
-          <X size={20} />
-        </button>
-        <Brand />
-        <p className="eyebrow">NEX CONSULTING KG</p>
-        <h2>Finanzbuchhaltung</h2>
-        <nav aria-label="Finanzbuchhaltung">
-          {financeViews.map(([slug, label, detail], i) => (
-            <Link
-              key={slug}
-              className={current[0] === slug ? "active" : ""}
-              href={"/crm/finance/" + slug}
-              onClick={() => setMobile(false)}
-            >
-              <span className="finance-nav-number">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <span>
-                <strong>{label}</strong>
-                <small>{detail}</small>
-              </span>
-            </Link>
-          ))}
-        </nav>
-        <div className="finance-sidebar-bottom">
-          <Link href="/crm?tab=Rechnungen">
-            Kundenrechnungen <ArrowUpRight size={14} />
-          </Link>
-          <Link href="/crm?tab=Betreuung">
-            Betreuungsverträge <ArrowUpRight size={14} />
-          </Link>
-          <Link href="/crm">← Zurück zum CRM</Link>
-          <p>
-            <LockKeyhole size={12} /> Geschützter Unternehmensbestand
-          </p>
-        </div>
-      </aside>
-      <div className="finance-main">
+      <WorkspaceNavigation
+        active="Finanzen"
+        user={user}
+        mobile={mobile}
+        onMobileChange={setMobile}
+      />
+      <SectionNavigation
+        title="Finanzen"
+        active={view}
+        items={financeNavigation}
+      />
+      <div className="workspace-main finance-main">
         <header className="finance-topbar">
-          <div className="finance-mobile-brand">
-            <Brand />
-          </div>
-          <button
-            className="button small outline finance-menu"
-            onClick={() => setMobile(!mobile)}
-            aria-expanded={mobile}
-          >
-            Navigation
-          </button>
           <span>
             Workspace <ChevronRight size={13} /> Finanzen{" "}
             <ChevronRight size={13} /> {current[1]}
@@ -394,69 +365,78 @@ export default function FinanceHub({ view }: { view: string }) {
           <div className="finance-heading">
             <div>
               <p className="eyebrow">EINE GESELLSCHAFT. ALLE MARKEN.</p>
-              <h1>{current[1]}</h1>
+              <h1>
+                {view === "settings" ? "Buchhaltung verwalten" : current[1]}
+              </h1>
               <p>
                 {view === "overview"
                   ? "Alle Zahlen an einem Ort. Mit klarer Herkunft und getrennten Kostenstellen."
                   : current[2]}
               </p>
             </div>
-            <div
-              className="finance-scope-switch"
-              aria-label="Buchhaltungsansicht"
-            >
-              <button
-                className={scope === "nex" ? "active" : ""}
-                onClick={() => setScope("nex")}
+            {view !== "settings" && (
+              <div
+                className="finance-scope-switch"
+                aria-label="Buchhaltungsansicht"
               >
-                <Building2 size={16} /> NEX Allgemein
-              </button>
+                <button
+                  className={scope === "nex" ? "active" : ""}
+                  onClick={() => setScope("nex")}
+                >
+                  <Building2 size={16} /> NEX Allgemein
+                </button>
+                <button
+                  className={scope === "all" ? "active" : ""}
+                  onClick={() => setScope("all")}
+                >
+                  <Network size={16} /> Gesamtfirma
+                </button>
+              </div>
+            )}
+          </div>
+          {view !== "settings" && (
+            <div className="finance-toolbar">
+              <label>
+                Kostenstelle
+                <select
+                  value={scope}
+                  onChange={(e) => setScope(e.target.value)}
+                >
+                  <option value="all">Gesamtfirma · alle Marken</option>
+                  {Object.entries(brandNames).map(([id, name]) => (
+                    <option value={id} key={id}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Zeitraum
+                <input
+                  type="month"
+                  value={period.length === 7 ? period : ""}
+                  onChange={(e) => setPeriod(e.target.value)}
+                />
+              </label>
               <button
-                className={scope === "all" ? "active" : ""}
-                onClick={() => setScope("all")}
+                className="text-link"
+                onClick={() => setPeriod(today().slice(0, 4))}
               >
-                <Network size={16} /> Gesamtfirma
+                Gesamtes Jahr
               </button>
+              <button className="text-link" onClick={() => setPeriod("")}>
+                Alle Zeiträume
+              </button>
+              <label className="finance-search">
+                Suche
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Beleg, Geschäftspartner, Referenz …"
+                />
+              </label>
             </div>
-          </div>
-          <div className="finance-toolbar">
-            <label>
-              Kostenstelle
-              <select value={scope} onChange={(e) => setScope(e.target.value)}>
-                <option value="all">Gesamtfirma · alle Marken</option>
-                {Object.entries(brandNames).map(([id, name]) => (
-                  <option value={id} key={id}>
-                    {name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Zeitraum
-              <input
-                type="month"
-                value={period.length === 7 ? period : ""}
-                onChange={(e) => setPeriod(e.target.value)}
-              />
-            </label>
-            <button
-              className="text-link"
-              onClick={() => setPeriod(today().slice(0, 4))}
-            >
-              Gesamtes Jahr
-            </button>
-            <button className="text-link" onClick={() => setPeriod("")}>
-              Alle Zeiträume
-            </button>
-            <label className="finance-search">
-              Suche
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Beleg, Geschäftspartner, Referenz …"
-              />
-            </label>
-          </div>
+          )}
           {error && (
             <p className="finance-error" role="alert">
               {error}
@@ -473,23 +453,25 @@ export default function FinanceHub({ view }: { view: string }) {
           )}
           {data && (
             <>
-              {scope === "all" && incomplete.length > 0 && (
-                <div className="finance-banner">
-                  <Network size={20} />
-                  <div>
-                    <strong>Gesamtstand noch unvollständig</strong>
-                    <p>
-                      {incomplete.map((s) => s.name).join(", ")}: Schnittstelle
-                      fehlt, ist nicht vollständig oder länger als 24 Stunden
-                      ohne Abgleich. Fehlende Marken werden nicht als
-                      vollständiger Null-Umsatz gewertet.
-                    </p>
+              {view !== "settings" &&
+                scope === "all" &&
+                incomplete.length > 0 && (
+                  <div className="finance-banner">
+                    <Network size={20} />
+                    <div>
+                      <strong>Gesamtstand noch unvollständig</strong>
+                      <p>
+                        {incomplete.map((s) => s.name).join(", ")}:
+                        Schnittstelle fehlt, ist nicht vollständig oder länger
+                        als 24 Stunden ohne Abgleich. Fehlende Marken werden
+                        nicht als vollständiger Null-Umsatz gewertet.
+                      </p>
+                    </div>
+                    <Link href="/crm/finance/settings/connections">
+                      Schnittstellen <ArrowUpRight size={15} />
+                    </Link>
                   </div>
-                  <Link href="/crm/finance/settings">
-                    Schnittstellen <ArrowUpRight size={15} />
-                  </Link>
-                </div>
-              )}
+                )}
               {records.some((r) => r.missing) && (
                 <p className="finance-error">
                   Im Quellsystem fehlende Datensätze sind markiert. Vor dem
@@ -1109,134 +1091,213 @@ export default function FinanceHub({ view }: { view: string }) {
               )}
               {current[0] === "settings" && (
                 <>
-                  <div className="finance-panel">
-                    <p className="eyebrow">RECHTSTRÄGER</p>
-                    <h2>NEX Consulting KG</h2>
-                    <p>
-                      Eine Gesellschaft, getrennte Marken-Kostenstellen.
-                      Zwischen den Marken werden keine zusätzlichen internen
-                      Umsätze erzeugt.
-                    </p>
-                    <div className="finance-brand-grid">
-                      {data.brands.map((b) => (
-                        <div key={b.code}>
-                          <Building2 size={17} />
-                          <strong>{b.name}</strong>
-                          <small>{b.code}</small>
+                  <nav
+                    className="settings-tabs"
+                    aria-label="Buchhaltung verwalten"
+                  >
+                    {[
+                      ["overview", "Übersicht"],
+                      ["brands", "Marken"],
+                      ["allocation", "Kostenverteilung"],
+                      ["connections", "Verbindungen"],
+                    ].map(([id, label]) => (
+                      <Link
+                        key={id}
+                        href={
+                          "/crm/finance/settings" +
+                          (id === "overview" ? "" : "/" + id)
+                        }
+                        aria-current={
+                          settingsSection === id ? "page" : undefined
+                        }
+                        className={settingsSection === id ? "active" : ""}
+                      >
+                        {label}
+                      </Link>
+                    ))}
+                  </nav>
+                  {settingsSection === "overview" && (
+                    <div className="settings-card-grid">
+                      {[
+                        [
+                          "brands",
+                          "Marken & Kostenstellen",
+                          "NEX Allgemeinkosten und die zugehörigen Marken im Überblick.",
+                        ],
+                        [
+                          "allocation",
+                          "Allgemeinkosten verteilen",
+                          "Den passenden Verteilungsschlüssel für Ihre Auswertungen festlegen.",
+                        ],
+                        [
+                          "connections",
+                          "Verbundene Buchhaltungen",
+                          "Verbindungen und den letzten Datenabgleich prüfen.",
+                        ],
+                      ].map(([id, title, text]) => (
+                        <Link
+                          key={id}
+                          className="settings-card"
+                          href={"/crm/finance/settings/" + id}
+                        >
+                          <h3>{title}</h3>
+                          <p>{text}</p>
+                          <span>
+                            Öffnen <ArrowUpRight size={16} />
+                          </span>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                  {settingsSection === "brands" && (
+                    <div className="finance-panel">
+                      <p className="eyebrow">RECHTSTRÄGER</p>
+                      <h2>NEX Consulting KG</h2>
+                      <p>
+                        Eine Gesellschaft, getrennte Marken-Kostenstellen.
+                        Zwischen den Marken werden keine zusätzlichen internen
+                        Umsätze erzeugt.
+                      </p>
+                      <div className="finance-brand-grid">
+                        {data.brands
+                          .filter((b) => b.code !== "unassigned")
+                          .map((b) => (
+                            <div key={b.code}>
+                              <Building2 size={17} />
+                              <strong>{b.name}</strong>
+                              <small>
+                                {b.code === "nex" ? "Allgemeinkosten" : "Marke"}
+                              </small>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                  {settingsSection === "allocation" && (
+                    <AllocationForm
+                      data={data}
+                      busy={busy}
+                      save={(p) => call("allocation", p)}
+                    />
+                  )}
+                  {settingsSection === "connections" && (
+                    <div className="finance-panel">
+                      <div className="finance-panel-heading">
+                        <div>
+                          <p className="eyebrow">VERBUNDENE BUCHHALTUNGEN</p>
+                          <h2>Verbundene Buchhaltungen</h2>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                  <AllocationForm
-                    data={data}
-                    busy={busy}
-                    save={(p) => call("allocation", p)}
-                  />
-                  <div className="finance-panel">
-                    <div className="finance-panel-heading">
-                      <div>
-                        <p className="eyebrow">VERBUNDENE BUCHHALTUNGEN</p>
-                        <h2>Schnittstellen der Marken</h2>
+                        <Network />
                       </div>
-                      <Network />
+                      <p className="finance-note">
+                        Hier sehen Sie, welche Marken bereits Daten liefern.
+                        Eine vorbereitete Verbindung enthält noch keine
+                        importierten Buchungen.
+                      </p>
+                      {data.sources
+                        .filter((s) => s.code !== "nex")
+                        .map((s) => (
+                          <article className="finance-source-card" key={s.code}>
+                            <div>
+                              <h3>{s.name}</h3>
+                              <p>
+                                {s.status === "connected"
+                                  ? "Verbunden"
+                                  : s.status === "partial"
+                                    ? "Teilbestand"
+                                    : s.status === "error"
+                                      ? "Abgleich fehlgeschlagen"
+                                      : "Vorbereitet · Quellprojekt noch anbinden"}
+                              </p>
+                              <small>
+                                {s.last_sync
+                                  ? s.record_count + " Datensätze · "
+                                  : ""}
+                                {s.last_sync
+                                  ? new Date(s.last_sync).toLocaleString(
+                                      "de-DE",
+                                    )
+                                  : "Noch kein Datenstand"}
+                              </small>
+                              {s.last_error && (
+                                <p className="finance-error">{s.last_error}</p>
+                              )}
+                            </div>
+                            <div className="finance-inline">
+                              <details className="finance-connection-setup">
+                                <summary>Verbindung einrichten</summary>
+                                <p>
+                                  Neuen Schlüssel im Quellprojekt hinterlegen.
+                                  Das Erzeugen allein startet noch keinen
+                                  Datenabgleich.
+                                </p>
+                                <button
+                                  className="button small outline"
+                                  disabled={busy}
+                                  onClick={async () => {
+                                    const r = await call("source_token", {
+                                      source: s.code,
+                                    });
+                                    if (r)
+                                      setToken({
+                                        source: s.code,
+                                        value: r.result.token,
+                                      });
+                                  }}
+                                >
+                                  {s.enabled
+                                    ? "Schlüssel erneuern"
+                                    : "Schlüssel erstellen"}
+                                </button>
+                              </details>
+                              <button
+                                className="button small"
+                                disabled={busy || !s.enabled}
+                                onClick={() =>
+                                  call(
+                                    "",
+                                    { source: s.code },
+                                    "/api/finance/sync",
+                                  )
+                                }
+                              >
+                                Jetzt abgleichen
+                              </button>
+                            </div>
+                          </article>
+                        ))}
+                      {token && (
+                        <div className="finance-token">
+                          <h3>Schlüssel für {brandNames[token.source]}</h3>
+                          <p>
+                            Einmalige Anzeige. Im Quellprojekt als
+                            NEX_ACCOUNTING_TOKEN hinterlegen.
+                          </p>
+                          <input
+                            aria-label="Schnittstellenschlüssel"
+                            type="password"
+                            readOnly
+                            value={token.value}
+                          />
+                          <button
+                            className="button small outline"
+                            onClick={async () => {
+                              await navigator.clipboard.writeText(token.value);
+                              setNotice("Schnittstellenschlüssel kopiert.");
+                            }}
+                          >
+                            Kopieren
+                          </button>
+                          <button
+                            className="text-link"
+                            onClick={() => setToken(null)}
+                          >
+                            Anzeige schließen
+                          </button>
+                        </div>
+                      )}
                     </div>
-                    <p className="finance-note">
-                      Jede Marke bekommt einen eigenen Schlüssel ausschließlich
-                      für ihre Buchhaltungsdaten. Bestehende Datenbank- oder
-                      Administrationszugänge werden nicht weitergegeben. Neue
-                      Schlüssel ersetzen die bisherige Verbindung.
-                    </p>
-                    {data.sources
-                      .filter((s) => s.code !== "nex")
-                      .map((s) => (
-                        <article className="finance-source-card" key={s.code}>
-                          <div>
-                            <h3>{s.name}</h3>
-                            <p>
-                              {s.status === "connected"
-                                ? "Verbunden"
-                                : s.status === "partial"
-                                  ? "Teilbestand"
-                                  : s.status === "error"
-                                    ? "Abgleich fehlgeschlagen"
-                                    : "Vorbereitet · Quellprojekt noch anbinden"}
-                            </p>
-                            <small>
-                              {s.record_count} Datensätze ·{" "}
-                              {s.last_sync
-                                ? new Date(s.last_sync).toLocaleString("de-DE")
-                                : "Noch kein Datenstand"}
-                            </small>
-                            {s.last_error && (
-                              <p className="finance-error">{s.last_error}</p>
-                            )}
-                          </div>
-                          <div className="finance-inline">
-                            <button
-                              className="button small outline"
-                              disabled={busy}
-                              onClick={async () => {
-                                const r = await call("source_token", {
-                                  source: s.code,
-                                });
-                                if (r)
-                                  setToken({
-                                    source: s.code,
-                                    value: r.result.token,
-                                  });
-                              }}
-                            >
-                              {s.enabled
-                                ? "Schlüssel erneuern"
-                                : "Schnittstelle aktivieren"}
-                            </button>
-                            <button
-                              className="button small"
-                              disabled={busy || !s.enabled}
-                              onClick={() =>
-                                call(
-                                  "",
-                                  { source: s.code },
-                                  "/api/finance/sync",
-                                )
-                              }
-                            >
-                              Jetzt abgleichen
-                            </button>
-                          </div>
-                        </article>
-                      ))}
-                    {token && (
-                      <div className="finance-token">
-                        <h3>Schlüssel für {brandNames[token.source]}</h3>
-                        <p>
-                          Einmalige Anzeige. Im Quellprojekt als
-                          NEX_ACCOUNTING_TOKEN hinterlegen.
-                        </p>
-                        <input
-                          aria-label="Schnittstellenschlüssel"
-                          type="password"
-                          readOnly
-                          value={token.value}
-                        />
-                        <button
-                          className="button small outline"
-                          onClick={async () => {
-                            await navigator.clipboard.writeText(token.value);
-                            setNotice("Schnittstellenschlüssel kopiert.");
-                          }}
-                        >
-                          Kopieren
-                        </button>
-                        <button
-                          className="text-link"
-                          onClick={() => setToken(null)}
-                        >
-                          Anzeige schließen
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                  )}
                 </>
               )}
             </>
