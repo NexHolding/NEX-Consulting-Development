@@ -1854,3 +1854,39 @@
     flex: 1 1 auto;
   }
 }
+
+/* Recurring customer services use the existing CRM form and card grid. */
+.billing-module-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+.billing-entry {
+  margin: 20px 0;
+  padding: 20px;
+  border: 1px solid var(--crm-border, #ae884c33);
+  border-radius: 12px;
+}
+.recurring-billing .table-scroll {
+  margin-top: 20px;
+}
+.project-billing-details {
+  margin: 16px 0;
+}
+.project-billing-details > summary {
+  cursor: pointer;
+  color: #ae884c;
+}
+.project-billing-details .recurring-billing {
+  padding: 16px;
+  margin-top: 12px;
+}
+.project-billing-details .panel-heading {
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.project-billing-details .form-pair {
+  grid-template-columns: 1fr;
+}

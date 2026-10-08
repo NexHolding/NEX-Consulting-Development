@@ -1,3 +1,8 @@
+import {
+  billingProductSchema,
+  recurringCostSchema,
+  subscriptionSchema,
+} from "@/lib/recurring-billing";
 import { readOfferCatalog } from "@/lib/offer-server";
 import { offerSelectionSchema } from "@/lib/offer-schema";
 import { calculateOffer, offerQuantity } from "@/lib/offer-catalog";
@@ -303,46 +308,99 @@ export async function POST(request: Request) {
         });
         break;
       }
-      case "subscription": {
-        const p = z
-          .object({
-            project_id: uuid,
-
-            starts_on: z.iso.date(),
-          })
-          .parse(payload);
-        if (!p.starts_on.endsWith("-01"))
-          throw new Error(
-            "Betreuungsbeginn muss der erste Tag eines Monats sein.",
-          );
-        const r = await client
-          .from("nc_projects")
-          .select("offer_snapshot")
-          .eq("id", p.project_id)
+      case "billing_product": {
+        const { id, ...fields } = billingProductSchema.parse(payload);
+        result = id
+          ? await client
+              .from("nc_billing_products")
+              .update(fields)
+              .eq("id", id)
+              .select("id")
+              .single()
+          : await client.from("nc_billing_products").insert(fields);
+        break;
+      }
+      case "recurring_cost": {
+        const { id, ...fields } = recurringCostSchema.parse(payload);
+        const product = await client
+          .from("nc_billing_products")
+          .select("active")
+          .eq("id", fields.product_id)
           .single();
-        if (r.error || !r.data.offer_snapshot)
-          throw Error(
-            "Bitte zuerst den Projektumfang samt Betreuung vereinbaren.",
+        if (product.error || (!id && !product.data.active))
+          return NextResponse.json(
+            { error: "Bitte ein aktives Abrechnungsmodul auswählen." },
+            { status: 400 },
           );
-        const quote = r.data.offer_snapshot;
+        result = id
+          ? await client
+              .from("nc_recurring_costs")
+              .update(fields)
+              .eq("id", id)
+              .select("id")
+              .single()
+          : await client.from("nc_recurring_costs").insert(fields);
+        break;
+      }
+      case "subscription": {
+        const p = subscriptionSchema.parse(payload);
+        let quote;
+        if (p.mode === "project") {
+          const r = await client
+            .from("nc_projects")
+            .select("offer_snapshot")
+            .eq("id", p.project_id)
+            .single();
+          if (r.error || !r.data.offer_snapshot)
+            return NextResponse.json(
+              {
+                error:
+                  "Bitte zuerst einen Projektumfang vereinbaren oder einen individuellen Tarif wählen.",
+              },
+              { status: 400 },
+            );
+          quote = r.data.offer_snapshot;
+        } else if (p.mode === "package") {
+          const catalog = await readOfferCatalog();
+          quote = calculateOffer(catalog, {
+            budget:
+              p.package === "Basic"
+                ? 1000
+                : p.package === "Business"
+                  ? 10000
+                  : 35000,
+            logo: false,
+            domains: 0,
+            domainFee: 3,
+            catalogVersion: catalog.version,
+          });
+        }
         result = await client.from("nc_subscriptions").insert({
           project_id: p.project_id,
           starts_on: p.starts_on,
-          plan:
-            quote.package === "Basic"
-              ? "Care"
+          ends_on: p.ends_on,
+          plan: quote
+            ? quote.package === "Basic"
+              ? "Care Start"
               : quote.package === "Business"
-                ? "Care Plus"
-                : "Care Dedicated",
-          monthly_cents: quote.monthly_cents,
-          included_minutes: offerQuantity(quote, "care_minutes"),
-          offer_snapshot: quote,
-          included_requests: offerQuantity(quote, "care_requests"),
+                ? "Care Business"
+                : "Care Scale"
+            : p.plan,
+          monthly_cents: quote ? quote.monthly_cents : p.monthly_cents,
+          included_minutes: quote
+            ? offerQuantity(quote, "care_minutes")
+            : p.included_minutes,
+          included_requests: quote
+            ? offerQuantity(quote, "care_requests")
+            : p.included_requests,
+          offer_snapshot: quote ?? null,
         });
         break;
       }
       case "subscription_end": {
-        const p = z.object({ id: uuid, ends_on: z.iso.date() }).parse(payload);
+        const p = z
+          .object({ id: uuid, ends_on: z.iso.date().nullable() })
+          .parse(payload);
         result = await client
           .from("nc_subscriptions")
           .update({ ends_on: p.ends_on })

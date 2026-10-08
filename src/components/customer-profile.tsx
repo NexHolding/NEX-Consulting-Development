@@ -1,4 +1,7 @@
 "use client";
+import CustomerBilling from "./recurring-billing";
+import type { BillingData } from "@/lib/recurring-billing";
+import type { OfferCatalog } from "@/lib/offer-catalog";
 import TimeEntryEditor from "./time-entry-editor";
 import { extraAmount } from "@/lib/time-report";
 import Link from "./app-link";
@@ -403,6 +406,8 @@ export function TimeReport({
 }
 export default function CustomerProfile({
   customer: c,
+  billingData,
+  catalog,
   section,
   projects,
   times,
@@ -414,6 +419,8 @@ export default function CustomerProfile({
   track,
 }: {
   customer: CustomerRecord;
+  billingData: BillingData;
+  catalog?: OfferCatalog;
   section: string;
   projects: Project[];
   times: ReportTime[];
@@ -573,6 +580,19 @@ export default function CustomerProfile({
                   )}
                 </p>
                 <ProjectOffer project={p} mutate={mutate} busy={busy} />
+                <details className="project-billing-details">
+                  <summary>Monatliche Kosten & Abos</summary>
+                  <CustomerBilling
+                    customerId={c.id}
+                    projectId={p.id}
+                    projects={[p]}
+                    data={billingData}
+                    busy={busy}
+                    mutate={mutate}
+                    now={now}
+                    catalog={catalog}
+                  />
+                </details>
                 <CorrectionProjectSettings
                   key={
                     p.id +
@@ -605,6 +625,17 @@ export default function CustomerProfile({
           now={now}
           mutate={mutate}
           busy={busy}
+        />
+      )}
+      {section === "Monatliche Kosten & Abos" && (
+        <CustomerBilling
+          customerId={c.id}
+          projects={cp}
+          data={billingData}
+          busy={busy}
+          mutate={mutate}
+          now={now}
+          catalog={catalog}
         />
       )}
       {section === "Rechnungen" && (

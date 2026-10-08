@@ -13,12 +13,14 @@ export const settingsSections = [
   "Übersicht",
   "Preise & Pakete",
   "Leistungen",
+  "Abrechnungsmodule",
   "Mein Zugang",
 ];
 export const customerSections = [
   "Übersicht",
   "Stammdaten",
   "Rechnungsdaten",
+  "Monatliche Kosten & Abos",
   "Zugänge & Infrastruktur",
   "Projekte",
   "Zeiten & Auszüge",

@@ -7,14 +7,24 @@ import {
   UserRound,
   Landmark,
 } from "lucide-react";
+import { BillingModules } from "./recurring-billing";
+import type { BillingProduct, BillingMutation } from "@/lib/recurring-billing";
 import CatalogAdmin from "./catalog-admin";
 export default function WorkspaceSettings({
   section,
   username,
+  products,
+  billingAvailable,
+  busy,
+  mutate,
   onSelect,
 }: {
   section: string;
   username: string;
+  products: BillingProduct[];
+  billingAvailable?: boolean;
+  busy: boolean;
+  mutate: BillingMutation;
   onSelect: (section: string) => void;
 }) {
   return (
@@ -33,6 +43,11 @@ export default function WorkspaceSettings({
               {
                 title: "Preise & Pakete",
                 text: "Projektbudgets und monatliche Betreuungspreise festlegen.",
+                Icon: SlidersHorizontal,
+              },
+              {
+                title: "Abrechnungsmodule",
+                text: "Produkte und Faktoren für monatlich weiterberechnete Kundenkosten verwalten.",
                 Icon: SlidersHorizontal,
               },
               {
@@ -72,6 +87,15 @@ export default function WorkspaceSettings({
           </div>
         </>
       )}
+      {section === "Abrechnungsmodule" &&
+        (billingAvailable === false ? (
+          <p className="info-box">
+            Die Abrechnungsmodule werden mit der nächsten Datenbankmigration
+            freigeschaltet.
+          </p>
+        ) : (
+          <BillingModules products={products} busy={busy} mutate={mutate} />
+        ))}
       <CatalogAdmin
         mode={
           section === "Preise & Pakete"

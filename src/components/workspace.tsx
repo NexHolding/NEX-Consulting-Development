@@ -1,4 +1,10 @@
 "use client";
+import CustomerBilling, {
+  SubscriptionFields,
+  subscriptionPayload,
+} from "./recurring-billing";
+import type { BillingData } from "@/lib/recurring-billing";
+import type { OfferCatalog } from "@/lib/offer-catalog";
 import TimeEntryEditor from "./time-entry-editor";
 import { withLoading, beginLoading } from "@/lib/loading-state";
 import { useEffect, useState, useCallback, useRef } from "react";
@@ -108,7 +114,8 @@ type Lead = {
   package: string;
   status: string;
 };
-type Data = {
+type Data = BillingData & {
+  offer_catalog?: OfferCatalog;
   capturedAt: number;
   user: { id: string; username: string; role: string };
   customers: Customer[];
@@ -261,6 +268,7 @@ export default function Workspace({
           "Übersicht",
           "Stammdaten",
           "Rechnungsdaten",
+          "Monatliche Kosten & Abos",
           "Zugänge & Infrastruktur",
           "Projekte",
           "Zeiten & Auszüge",
@@ -431,6 +439,8 @@ export default function Workspace({
         ...manualAssignment,
       };
     }
+    if (modal === "subscription")
+      payload = subscriptionPayload(new FormData(e.currentTarget));
     if (modal === "invoice")
       payload = {
         project_id: f.project_id,
@@ -889,6 +899,8 @@ export default function Workspace({
             <CustomerProfile
               key={customer.id}
               customer={customer}
+              billingData={data}
+              catalog={data.offer_catalog}
               section={section}
               projects={data.projects}
               times={data.time_entries}
@@ -1038,6 +1050,19 @@ export default function Workspace({
                         </select>
                       </label>
                       <ProjectOffer project={p} mutate={mutate} busy={busy} />
+                      <details className="project-billing-details">
+                        <summary>Monatliche Kosten & Abos</summary>
+                        <CustomerBilling
+                          customerId={p.customer_id}
+                          projectId={p.id}
+                          projects={[p]}
+                          data={data}
+                          busy={busy}
+                          mutate={mutate}
+                          now={now}
+                          catalog={data.offer_catalog}
+                        />
+                      </details>
                       <CorrectionProjectSettings
                         key={
                           p.id +
@@ -1351,9 +1376,9 @@ export default function Workspace({
                 </button>
               </div>
               <p className="info-box">
-                Monatliche Entwürfe werden täglich automatisch erstellt. Beginn
-                zum Monatsersten, volle Monatsgebühr. Versand und steuerliche
-                Finalisierung sind noch nicht aktiviert.
+                Monatliche Entwürfe werden täglich automatisch erstellt. Volle
+                Monatsgebühr für jeden begonnenen Kalendermonat. Versand und
+                steuerliche Finalisierung sind noch nicht aktiviert.
               </p>
               {data.subscriptions.length ? (
                 <div className="project-cards">
@@ -1388,11 +1413,10 @@ export default function Workspace({
                           defaultValue={s.ends_on || ""}
                           min={s.starts_on}
                           onChange={(e) => {
-                            if (e.target.value)
-                              void mutate("subscription_end", {
-                                id: s.id,
-                                ends_on: e.target.value,
-                              });
+                            void mutate("subscription_end", {
+                              id: s.id,
+                              ends_on: e.target.value || null,
+                            });
                           }}
                         />
                       </label>
@@ -1402,7 +1426,7 @@ export default function Workspace({
               ) : (
                 <Empty
                   title="Planbare Betreuung beginnt hier."
-                  text="Verknüpfen Sie Care, Care Plus oder Care Dedicated mit einem Kundenprojekt."
+                  text="Legen Sie individuelle Monatspreise an oder wählen Sie ein bestehendes Betreuungspaket."
                 />
               )}
             </section>
@@ -1540,6 +1564,10 @@ export default function Workspace({
             <WorkspaceSettings
               section={section}
               username={data.user.username}
+              products={data.billing_products ?? []}
+              billingAvailable={data.billingAvailable}
+              busy={busy}
+              mutate={mutate}
               onSelect={(item) => navigate("Einstellungen", "", item)}
             />
           )}
@@ -1761,38 +1789,16 @@ export default function Workspace({
                 </label>
               )}
               {modal === "subscription" && (
-                <>
-                  {data.projects.find((p) => p.id === selected)
-                    ?.offer_snapshot ? (
-                    <OfferSummary
-                      quote={
-                        data.projects.find((p) => p.id === selected)!
-                          .offer_snapshot!
-                      }
-                      details
-                    />
-                  ) : (
-                    <p className="info-box">
-                      Bitte zuerst im Projekt den Paketumfang und die Betreuung
-                      vereinbaren.
-                    </p>
-                  )}
-                  <label>
-                    Startdatum (Monatserster)
-                    <input
-                      type="date"
-                      name="starts_on"
-                      defaultValue={month + "-01"}
-                      required
-                    />
-                  </label>
-                  <p className="footnote">
-                    Preis, Domains und monatliche Kontingente werden aus dem
-                    vereinbarten Projektumfang übernommen. Der Monatslauf
-                    erstellt Entwürfe ab dem gewählten Monat. Kein automatischer
-                    Versand.
-                  </p>
-                </>
+                <SubscriptionFields
+                  key={selected}
+                  quote={
+                    data.projects.find((p) => p.id === selected)?.offer_snapshot
+                  }
+                  catalog={data.offer_catalog}
+                  today={new Date(now).toLocaleDateString("sv-SE", {
+                    timeZone: "Europe/Berlin",
+                  })}
+                />
               )}
               {modal === "invoice" && (
                 <>

@@ -1,4 +1,5 @@
 import "server-only";
+import { offerCatalogSchema } from "./offer-schema";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { hashToken } from "./security.mjs";
@@ -68,46 +69,75 @@ export async function snapshot() {
     "tasks",
     "leads",
     "subscriptions",
+    "billing_products",
+    "recurring_costs",
     "invoices",
   ] as const;
-  const result = await Promise.all(
-    names.map(async (n) => {
-      const rows: unknown[] = [];
-      for (let offset = 0; ; offset += 1000) {
-        const r = await client
-          .from("nc_" + n)
-          .select(
-            n === "time_entries"
-              ? "*,invoice_links:nc_invoice_times(time_id)"
-              : "*",
+  const catalogPromise = client
+    .from("nc_offer_catalog")
+    .select("version,document")
+    .eq("id", 1)
+    .single();
+  const [result, catalog] = await Promise.all([
+    Promise.all(
+      names.map(async (n) => {
+        const rows: unknown[] = [];
+        for (let offset = 0; ; offset += 1000) {
+          const r = await client
+            .from("nc_" + n)
+            .select(
+              n === "time_entries"
+                ? "*,invoice_links:nc_invoice_times(time_id)"
+                : "*",
+            )
+            .order(n === "time_entries" ? "started_at" : "created_at", {
+              ascending: false,
+            })
+            .order("id")
+            .range(offset, offset + 999);
+          if (
+            r.error &&
+            ["billing_products", "recurring_costs"].includes(n) &&
+            ["42P01", "PGRST205"].includes(r.error.code)
           )
-          .order(n === "time_entries" ? "started_at" : "created_at", {
-            ascending: false,
-          })
-          .order("id")
-          .range(offset, offset + 999);
-        if (r.error) return r;
-        rows.push(
-          ...(n === "time_entries"
-            ? r.data.map((row) => {
-                const { invoice_links, ...entry } = row as unknown as Record<
-                  string,
-                  unknown
-                >;
-                return {
-                  ...entry,
-                  invoiced: Array.isArray(invoice_links)
-                    ? invoice_links.length > 0
-                    : Boolean(invoice_links),
-                };
-              })
-            : r.data),
-        );
-        if (r.data.length < 1000) return { data: rows, error: null };
-      }
-    }),
-  );
-  const out: Record<string, unknown> = { capturedAt: Date.now() };
+            return { data: [], error: null, migrationPending: true };
+          if (r.error) return r;
+          rows.push(
+            ...(n === "time_entries"
+              ? r.data.map((row) => {
+                  const { invoice_links, ...entry } = row as unknown as Record<
+                    string,
+                    unknown
+                  >;
+                  return {
+                    ...entry,
+                    invoiced: Array.isArray(invoice_links)
+                      ? invoice_links.length > 0
+                      : Boolean(invoice_links),
+                  };
+                })
+              : r.data),
+          );
+          if (r.data.length < 1000) return { data: rows, error: null };
+        }
+      }),
+    ),
+    catalogPromise,
+  ]);
+  const out: Record<string, unknown> = {
+    capturedAt: Date.now(),
+    billingAvailable: !result.some(
+      (r) => "migrationPending" in r && r.migrationPending,
+    ),
+    ...(catalog.data
+      ? {
+          offer_catalog: offerCatalogSchema.parse({
+            ...catalog.data.document,
+            version: catalog.data.version,
+          }),
+        }
+      : {}),
+  };
   result.forEach((r, i) => {
     if (r.error) throw new Error("Daten konnten nicht geladen werden.");
     out[names[i]] = r.data;
